@@ -6,7 +6,7 @@ Tracing service for the spaceteam.
 
 ### Alpha 1
 
-- [ ] Decode a EU Certificate
+- [x] Decode a EU Certificate
 
 ### Alpha 2
 
