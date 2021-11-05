@@ -2,6 +2,29 @@
 
 Tracing service for the spaceteam.
 
+## Quick-Start
+
+Install Python3.9 and zbar
+
+Run:
+
+```
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+FLASK_ENV=development flask run
+```
+
+This launces a simple webserver which can only be accessed from the localhost.
+
+**Note:** Don't use this server in production, it is insecure and low
+performance.
+
+## Development
+
+- Use [`black`](https://github.com/psf/black) to format code
+- Try to follow the python style guide [PEP 8](https://www.python.org/dev/peps/pep-0008/)
+
 ## Roadmap
 
 ### Alpha 1
