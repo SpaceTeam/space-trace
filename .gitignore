@@ -1,3 +1,4 @@
 qr.*
 venv/
 __pycache__/
+trace.db

@@ -6,13 +6,29 @@ Tracing service for the spaceteam.
 
 Install Python3.9 and zbar
 
-Run:
+Install all dependencies with:
 
-```
+```bash
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
-FLASK_ENV=development flask run
+export FLASK_APP=space_trace
+export FLASK_ENV=development
+flask run
+```
+
+Create the database file with:
+
+```
+$ python
+>>> from space_trace import db
+>>> db.create_all()
+```
+
+Start the server with
+
+```
+flask run
 ```
 
 This launces a simple webserver which can only be accessed from the localhost.

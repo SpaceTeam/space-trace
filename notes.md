@@ -10,6 +10,8 @@
 
 // Configurable rules
 
+// The pyromaniac gets a fire background
+
 # Datastructures
 
 ## Member
