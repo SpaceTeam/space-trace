@@ -1,9 +1,21 @@
 {% extends "layout.html" %}
 {% block body %}
 <h1>Certificates</h1>
+At the moment you can only upload png images of QR codes.
+PDF and live scan will come soon.
 
-{% for certificate in certificates %}
+<form action="/cert" method="post" enctype="multipart/form-data">
+    <input type=file name=file>
+    <input type=submit value=Upload>
+</form>
 
-{% endfor %}
+{% if certificates %}
+<h2>Uploaded certificates</h2>
+<ul>
+    {% for certificate in certificates %}
+    <li>Vaccine Certificate from {{certificate.date}}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 
 {% endblock %}

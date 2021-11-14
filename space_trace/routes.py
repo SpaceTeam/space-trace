@@ -1,8 +1,8 @@
 from datetime import date
-from flask import session, redirect, url_for
+from flask import session, redirect, url_for, request, flash
 from flask.templating import render_template
 from space_trace import app, db
-from space_trace.certificates import is_cert_expired
+from space_trace.certificates import detect_cert, is_cert_expired
 from space_trace.models import Certificate, User, Visit
 
 
@@ -27,7 +27,7 @@ def visit():
 
     cert = (
         Certificate.query.filter(Certificate.user == user.id)
-        .order_by(Certificate.date)
+        .order_by(Certificate.date.desc())
         .first()
     )
     if cert is None or is_cert_expired(cert):
@@ -54,7 +54,7 @@ def add_visit():
 
     cert = (
         Certificate.query.filter(Certificate.user == user.id)
-        .order_by(Certificate.date)
+        .order_by(Certificate.date.desc())
         .first()
     )
     if cert is None or is_cert_expired(cert):
@@ -66,7 +66,7 @@ def add_visit():
     if visit is not None:
         return redirect(url_for("visit"))
 
-    visit = Visit(date.today, user.id)
+    visit = Visit(date.today(), user.id)
     db.session.add(visit)
     db.session.commit()
     return redirect(url_for("visit"))
@@ -83,7 +83,7 @@ def cert():
         return redirect(url_for("login"))
 
     certs = Certificate.query.filter(Certificate.user == user.id).order_by(
-        Certificate.date
+        Certificate.date.desc()
     )
 
     return render_template("cert.html", user=user, certificates=certs)
@@ -91,7 +91,28 @@ def cert():
 
 @app.post("/cert")
 def upload_cert():
-    pass
+    # load the user
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.filter(User.email == session["username"]).first()
+    if user is None:
+        return redirect(url_for("login"))
+
+    file = request.files["file"]
+    # If the user does not select a file, the browser submits an
+    # empty file without a filename.
+    if file.filename == "":
+        flash("No selected file")
+        return redirect(request.url)
+
+    # bytes = file.read()
+
+    cert = detect_cert(file)
+    cert.user = user.id
+    db.session.add(cert)
+    db.session.commit()
+    return redirect("visit")
 
 
 # TODO: theses are test logins, they will be removed

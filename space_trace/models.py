@@ -20,7 +20,7 @@ class Certificate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.Text, unique=True, nullable=False)
     date = db.Column(db.Date, nullable=False)
-    add_date = db.Column(db.Date, nullable=False)
+    add_date = db.Column(db.Date, nullable=False, default=db.func.now())
     user = db.Column(db.ForeignKey("users.id"), nullable=False)
 
     def __init__(self, data=None, date=None, user=None):
