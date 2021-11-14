@@ -14,7 +14,6 @@ python3 -m venv venv
 pip install -r requirements.txt
 export FLASK_APP=space_trace
 export FLASK_ENV=development
-flask run
 ```
 
 Create the database file with:
@@ -51,7 +50,7 @@ performance.
 
 - [ ] Login with SAML
 - [ ] Upload Picture of QR Code (no verification)
-- [ ] Register for a day
+- [x] Register for a day
 - [ ] Export contacts on day basis
 
 ### Beta
@@ -59,6 +58,7 @@ performance.
 - [ ] Allow PDF upload
 - [ ] Allow taking pictures from the browser
 - [ ] Verify Certificates
+- [ ] Admin interface
 
 ### Final Release
 
