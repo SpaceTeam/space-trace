@@ -106,8 +106,6 @@ def upload_cert():
         flash("No selected file")
         return redirect(request.url)
 
-    # bytes = file.read()
-
     cert = detect_cert(file)
     cert.user = user.id
     db.session.add(cert)
