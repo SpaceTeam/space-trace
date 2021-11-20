@@ -16,7 +16,7 @@ def is_cert_expired(cert) -> bool:
     return days_since > CERT_EXPIRE_DURATION
 
 
-def detect_cert(file) -> Certificate:
+def detect_cert(file, user) -> Certificate:
     # decode the qr code
     img = Image.open(file)
     result = decode(img)
@@ -42,4 +42,4 @@ def detect_cert(file) -> Certificate:
     # create a certificate object
     json_dump = json.dumps(data)
     vaccination_date = date.fromisoformat(data[-260][1]["v"][0]["dt"])
-    return Certificate(json_dump, vaccination_date)
+    return Certificate(json_dump, vaccination_date, user.id)

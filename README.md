@@ -12,8 +12,7 @@ Install all dependencies with:
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
-export FLASK_APP=space_trace
-export FLASK_ENV=development
+export FLASK_APP=space_trace FLASK_ENV=development
 ```
 
 Create the database file with:

@@ -15,10 +15,24 @@
 
 <body>
     <div style="width: 100%; display: flex; justify-content: center;">
-        <img class="mt-5" src="/static/logo.png" alt="" style="max-width: 200px; width:60vw">
+        <a href="/">
+            <img class="mt-5" src="/static/logo.png" alt="" style="max-width: 200px; width:60vw">
+        </a>
     </div>
 
-    <div class="container-sm mt-5">
+
+    <div class="container-sm mt-5" style="max-width: 600px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+            {{message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
         {% block body %}
         {% endblock %}
     </div>

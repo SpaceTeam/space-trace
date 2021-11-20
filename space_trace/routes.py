@@ -30,11 +30,6 @@ def saml_response():
     req = prepare_flask_request(request)
     auth = init_saml_auth(req)
     errors = []
-    error_reason = None
-    not_auth_warn = False
-    success_slo = False
-    attributes = False
-    paint_logout = False
 
     request_id = None
     if "AuthNRequestID" in session:
@@ -42,35 +37,30 @@ def saml_response():
 
     auth.process_response(request_id=request_id)
     errors = auth.get_errors()
-    not_auth_warn = not auth.is_authenticated()
-    if len(errors) == 0:
-        if "AuthNRequestID" in session:
-            del session["AuthNRequestID"]
-        username = str(auth.get_nameid())
+    if len(errors) != 0:
+        flash(f"An error occured during login: {errors}", "danger")
+        return redirect(url_for("login"))
 
-        user = User.query.filter(User.email == username).first()
-        if user is None:
-            firstname = username.split(".", 1)[0].capitalize()
-            user = User(firstname, username)
-            db.session.add(user)
-            db.session.commit()
+    if "AuthNRequestID" in session:
+        del session["AuthNRequestID"]
+    username = str(auth.get_nameid())
 
-        session["username"] = username
+    user = User.query.filter(User.email == username).first()
+    if user is None:
+        firstname = username.split(".", 1)[0].capitalize()
+        user = User(firstname, username)
+        db.session.add(user)
+        db.session.commit()
 
-        self_url = OneLogin_Saml2_Utils.get_self_url(req)
-        if (
-            "RelayState" in request.form
-            and self_url != request.form["RelayState"]
-        ):
-            # To avoid 'Open Redirect' attacks, before execute the redirection confirm
-            # the value of the request.form['RelayState'] is a trusted URL.
-            return redirect(auth.redirect_to(request.form["RelayState"]))
+    session["username"] = username
 
-    elif auth.get_settings().is_debug_active():
-        error_reason = auth.get_last_error_reason()
+    self_url = OneLogin_Saml2_Utils.get_self_url(req)
+    if "RelayState" in request.form and self_url != request.form["RelayState"]:
+        # To avoid 'Open Redirect' attacks, before execute the redirection confirm
+        # the value of the request.form['RelayState'] is a trusted URL.
+        return redirect(auth.redirect_to(request.form["RelayState"]))
 
-    # TODO redirect to login page but with errors
-    return "ok?"
+    return redirect(url_for("home"))
 
 
 @app.get("/")
@@ -126,6 +116,7 @@ def add_visit():
         db.and_(Visit.date == date.today(), Visit.user == user.id)
     ).first()
     if visit is not None:
+        flash("You are already registered for today", "warning")
         return redirect(url_for("home"))
 
     visit = Visit(date.today(), user.id)
@@ -165,11 +156,19 @@ def upload_cert():
     # If the user does not select a file, the browser submits an
     # empty file without a filename.
     if file.filename == "":
-        flash("No selected file")
+        flash("No file seleceted", "warning")
         return redirect(request.url)
 
-    cert = detect_cert(file)
-    cert.user = user.id
+    try:
+        cert = detect_cert(file, user)
+    except Exception as e:
+        if hasattr(e, "message"):
+            message = e.message
+        else:
+            message = str(e)
+        flash(message, "warning")
+        return redirect(request.url)
+
     db.session.add(cert)
     db.session.commit()
     return redirect(url_for("home"))
