@@ -18,7 +18,7 @@ class User(db.Model):
 class Certificate(db.Model):
     __tablename__ = "certificates"
     id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.Text, unique=True, nullable=False)
+    data = db.Column(db.Text, nullable=False)
     date = db.Column(db.Date, nullable=False)
     add_date = db.Column(db.Date, nullable=False, default=db.func.now())
     user = db.Column(db.ForeignKey("users.id"), nullable=False)
@@ -37,6 +37,7 @@ class Visit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     user = db.Column(db.ForeignKey("users.id"), nullable=False)
+    # TODO: unique constraint with user&date
 
     def __init__(self, date=None, user=None):
         self.date = date

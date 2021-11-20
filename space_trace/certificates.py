@@ -37,6 +37,7 @@ def detect_cert(file) -> Certificate:
     data = flynn.decoder.loads(cbor_data)
 
     # TODO: verify the data now
+    # TODO: verify that the user belongs to that certificate
 
     # create a certificate object
     json_dump = json.dumps(data)

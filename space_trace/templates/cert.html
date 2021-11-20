@@ -4,9 +4,11 @@
 At the moment you can only upload png images of QR codes.
 PDF and live scan will come soon.
 
-<form action="/cert" method="post" enctype="multipart/form-data">
-    <input type=file name=file>
-    <input type=submit value=Upload>
+<form action="/cert" method="post" enctype="multipart/form-data" class="mb-5">
+    <div class="mb-3">
+        <input class="form-control" type="file" name="file" id="file">
+    </div>
+    <input class="btn btn-primary" type=submit value=Upload>
 </form>
 
 {% if certificates %}

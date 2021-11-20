@@ -1,0 +1,30 @@
+{
+    "strict": false,
+    "debug": true,
+    "sp": {
+        "entityId": "https://covid.tust.at",
+        "assertionConsumerService": {
+            "url": "https://covid.tust.at/saml",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        },
+        "singleLogoutService": {
+            "url": "https://covid.tust.at/?sls",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+        },
+        "NameIDFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+        "x509cert": "",
+        "privateKey": ""
+    },
+    "idp": {
+        "entityId": "https://accounts.google.com/o/saml2?idpid=C02czcafr",
+        "singleSignOnService": {
+            "url": "https://accounts.google.com/o/saml2/idp?idpid=C02czcafr",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+        },
+        "singleLogoutService": {
+            "url": "https://accounts.google.com/o/saml2/idp?idpid=C02czcafr",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+        },
+        "x509cert": "MIIDdDCCAlygAwIBAgIGAXY6GPGkMA0GCSqGSIb3DQEBCwUAMHsxFDASBgNVBAoTC0dvb2dsZSBJbmMuMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MQ8wDQYDVQQDEwZHb29nbGUxGDAWBgNVBAsTD0dvb2dsZSBGb3IgV29yazELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWEwHhcNMjAxMjA2MjIwNzU5WhcNMjUxMjA1MjIwNzU5WjB7MRQwEgYDVQQKEwtHb29nbGUgSW5jLjEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEPMA0GA1UEAxMGR29vZ2xlMRgwFgYDVQQLEw9Hb29nbGUgRm9yIFdvcmsxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx13658FKnIJNy/akfWNNvSfYN14bN32jG50OQBxXSf0n+jdo8tn+TFtPJP+JXMYvanGvCaafkLOXBEfME66FwxjXkAEib8BMV8k7MptzraA45V5EJg/5Of0fgSENI+d7ek5U7aLPIrqfxPPQeZNMzEGtBfLMU+0qQmeUgBbjHJ/qRTYryKGUR28RvFHL/jWB69qLGeMbO2x9QSZ43l0A3PS4 Q4d2crsyi68X0cwPg3BO01PkzsOdO4bIq4tfHWt4mzpJKOt9X3TVLI+oD7NfduUP3YrYtsbIE2VAirtI8rIk0iHR0cyYkGNUrjVYZZaTNxRzTGIe+poJ+i9NnONgCwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCTBhnVpZlgARR2pHl0Z52vOxLyz6XBvryA4PsHrVWDFsJEK0FxHo4TJeikfAGmjySBQ86PHX4KXSQYx2V0tpzxGUFrA2LakbFOegXh9itA+GYPBm1+y/XjB3HrajmQe7jaTZu8Wgm45uuTNpwsK0J1phdDdc3f1u/TurBH69/+ndKV4tnKF9AJfCkRyk/zPvZjumeKnZV39WGYmyJZHxjPgJkElAO7mezqgrWojDCIL46vFQJpyQ/LuBdwIlyoal6u/4RtmCGDpRTIKFzG2lICJ5woqRe29fUOolNj0rh9NTwLCqzx8qfpN5GyxdULG95NW9bMDtUXjZ4FFE4lv69a"
+    }
+}
