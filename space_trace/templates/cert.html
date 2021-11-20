@@ -15,7 +15,7 @@ PDF and live scan will come soon.
 <h2>Uploaded certificates</h2>
 <ul>
     {% for certificate in certificates %}
-    <li>Vaccine Certificate from {{certificate.date}}</li>
+    <li><strong>{{certificate.date}}</strong> {{certificate.product}}, {{certificate.manufacturer}}</li>
     {% endfor %}
 </ul>
 {% endif %}

@@ -20,12 +20,18 @@ class Certificate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.Text, nullable=False)
     date = db.Column(db.Date, nullable=False)
+    product = db.Column(db.Text, nullable=False)
+    manufacturer = db.Column(db.Text, nullable=False)
     add_date = db.Column(db.Date, nullable=False, default=db.func.now())
     user = db.Column(db.ForeignKey("users.id"), nullable=False)
 
-    def __init__(self, data=None, date=None, user=None):
+    def __init__(
+        self, data=None, date=None, product=None, manufacturer=None, user=None
+    ):
         self.data = data
         self.date = date
+        self.product = product
+        self.manufacturer = manufacturer
         self.user = user
 
     def __repr__(self):
