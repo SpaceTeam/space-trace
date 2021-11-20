@@ -1,23 +1,81 @@
 from datetime import date
 from flask import session, redirect, url_for, request, flash
 from flask.templating import render_template
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
+
 from space_trace import app, db
 from space_trace.certificates import detect_cert, is_cert_expired
 from space_trace.models import Certificate, User, Visit
 
 
-@app.route("/")
+def init_saml_auth(req):
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_PATH"])
+    return auth
+
+
+def prepare_flask_request(request):
+    # If server is behind proxys or balancers use the HTTP_X_FORWARDED fields
+    return {
+        "https": "on" if request.scheme == "https" else "off",
+        "http_host": request.host,
+        "script_name": request.path,
+        "get_data": request.args.copy(),
+        "post_data": request.form.copy(),
+    }
+
+
+@app.route("/saml", methods=["POST", "GET"])
+def saml_response():
+    req = prepare_flask_request(request)
+    auth = init_saml_auth(req)
+    errors = []
+    error_reason = None
+    not_auth_warn = False
+    success_slo = False
+    attributes = False
+    paint_logout = False
+
+    request_id = None
+    if "AuthNRequestID" in session:
+        request_id = session["AuthNRequestID"]
+
+    auth.process_response(request_id=request_id)
+    errors = auth.get_errors()
+    not_auth_warn = not auth.is_authenticated()
+    if len(errors) == 0:
+        if "AuthNRequestID" in session:
+            del session["AuthNRequestID"]
+        username = str(auth.get_nameid())
+
+        user = User.query.filter(User.email == username).first()
+        if user is None:
+            firstname = username.split(".", 1)[0].capitalize()
+            user = User(firstname, username)
+            db.session.add(user)
+            db.session.commit()
+
+        session["username"] = username
+
+        self_url = OneLogin_Saml2_Utils.get_self_url(req)
+        if (
+            "RelayState" in request.form
+            and self_url != request.form["RelayState"]
+        ):
+            # To avoid 'Open Redirect' attacks, before execute the redirection confirm
+            # the value of the request.form['RelayState'] is a trusted URL.
+            return redirect(auth.redirect_to(request.form["RelayState"]))
+
+    elif auth.get_settings().is_debug_active():
+        error_reason = auth.get_last_error_reason()
+
+    # TODO redirect to login page but with errors
+    return "ok?"
+
+
+@app.get("/")
 def home():
-    if "username" not in session:
-        return "You are not logged in"
-
-    user = User.query.filter(User.email == session["username"]).first()
-    return f"You are: id={user.id}, name={user.name}"
-
-
-@app.get("/visit")
-def visit():
-    # load the user
+    # Load the user
     if "username" not in session:
         return redirect(url_for("login"))
 
@@ -25,6 +83,7 @@ def visit():
     if user is None:
         return redirect(url_for("login"))
 
+    # Load the certificate
     cert = (
         Certificate.query.filter(Certificate.user == user.id)
         .order_by(Certificate.date.desc())
@@ -33,8 +92,9 @@ def visit():
     if cert is None or is_cert_expired(cert):
         return redirect(url_for("cert"))
 
+    # Load if currently visited
     visit = Visit.query.filter(
-        Visit.date == date.today() and Visit.user == user.id
+        db.and_(Visit.date == date.today(), Visit.user == user.id)
     ).first()
 
     return render_template(
@@ -42,9 +102,9 @@ def visit():
     )
 
 
-@app.post("/visit")
+@app.post("/")
 def add_visit():
-    # load the user
+    # Load the user
     if "username" not in session:
         return redirect(url_for("login"))
 
@@ -52,6 +112,7 @@ def add_visit():
     if user is None:
         return redirect(url_for("login"))
 
+    # Verify that the user has a valid certificate
     cert = (
         Certificate.query.filter(Certificate.user == user.id)
         .order_by(Certificate.date.desc())
@@ -60,16 +121,17 @@ def add_visit():
     if cert is None or is_cert_expired(cert):
         return redirect(url_for("cert"))
 
+    # Don't enter a visit if there is already one for today
     visit = Visit.query.filter(
-        Visit.date == date.today() and Visit.user == user.id
+        db.and_(Visit.date == date.today(), Visit.user == user.id)
     ).first()
     if visit is not None:
-        return redirect(url_for("visit"))
+        return redirect(url_for("home"))
 
     visit = Visit(date.today(), user.id)
     db.session.add(visit)
     db.session.commit()
-    return redirect(url_for("visit"))
+    return redirect(url_for("home"))
 
 
 @app.get("/cert")
@@ -110,10 +172,9 @@ def upload_cert():
     cert.user = user.id
     db.session.add(cert)
     db.session.commit()
-    return redirect("visit")
+    return redirect(url_for("home"))
 
 
-# TODO: theses are test logins, they will be removed
 @app.get("/login")
 def login():
     return render_template("login.html")
@@ -121,11 +182,22 @@ def login():
 
 @app.post("/login")
 def add_login():
-    session["username"] = "flotschi@email.com"
-    return redirect(url_for("visit"))
+    req = prepare_flask_request(request)
+    auth = init_saml_auth(req)
+
+    return_to = "https://covid.tust.at/"
+    sso_built_url = auth.login(return_to)
+    session["AuthNRequestID"] = auth.get_last_request_id()
+    return redirect(sso_built_url)
 
 
-@app.route("/logout")
+# @app.post("/login")
+# def add_login():
+#     session["username"] = "flotschi@email.com"
+#     return redirect(url_for("visit"))
+
+
+@app.get("/logout")
 def logout():
     session.pop("username", None)
     return redirect(url_for("login"))

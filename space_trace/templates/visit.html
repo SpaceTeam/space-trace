@@ -3,12 +3,13 @@
 
 {% if not visit %}
 <h1>Register for today</h1>
-<form action="/visit" method="post">
+<form action="{{ url_for('home') }}" method="post">
     <button type="submit" class="btn btn-primary">Register</button>
 </form>
 {% else %}
 <h1>Registered 👍</h1>
-{{user.name}}, you are registered for today ({{certificate.date}})
+{{user.name}}, you are registered for today ({{visit.date}})
+<br>
 {% endif %}
 
 {% endblock %}

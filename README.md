@@ -48,7 +48,7 @@ performance.
 
 ### Alpha 2
 
-- [ ] Login with SAML
+- [x] Login with SAML
 - [x] Upload Picture of QR Code (no verification)
 - [x] Register for a day
 - [ ] Export contacts on day basis
