@@ -72,3 +72,4 @@ Some links I found helpful in dealing with the certificate:
 - [What's Inside the EU Green Pass QR Code?](https://gir.st/blog/greenpass.html)
 - [Decoding the EU Digital Covid Certificate QR code](https://www.bartwolff.com/Blog/2021/08/08/decoding-the-eu-digital-covid-certificate-qr-code)
 - [https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md](https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md)
+- [Austrian implementation of the EU Digital COVID Certificates](https://github.com/Federal-Ministry-of-Health-AT/green-pass-overview#details-on-trust-listsbusiness-rulesvalue-sets)
