@@ -64,8 +64,9 @@ performance.
 - [ ] Smart export (by selecting infected member not dates)
 - [ ] public & private APIs so other services can integrate
 
-## Ressources
+## Resources
 Some links I found helpful in dealing with the certificate:
 
 - [What's Inside the EU Green Pass QR Code?](https://gir.st/blog/greenpass.html)
 - [Decoding the EU Digital Covid Certificate QR code](https://www.bartwolff.com/Blog/2021/08/08/decoding-the-eu-digital-covid-certificate-qr-code)
+- [https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md](https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md)
