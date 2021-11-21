@@ -50,6 +50,7 @@ CERT_EXPIRE_DURATION = 270
 
 
 def is_cert_expired(cert) -> bool:
+    # TODO: distinguish between first and second stab and Jonnson
     days_since = abs((date.today() - cert.date).days)
     return days_since > CERT_EXPIRE_DURATION
 
@@ -59,8 +60,7 @@ def detect_cert(file, user) -> Certificate:
     img = Image.open(file)
     result = decode(img)
     if result == []:
-        print("Not Detected!")
-        return None
+        raise Exception(message="No QR Code was detected in the image")
 
     # decode base45
     data_zlib = base45.b45decode(result[0].data[4:])
@@ -74,7 +74,12 @@ def detect_cert(file, user) -> Certificate:
     # decode cbor
     data = flynn.decoder.loads(cbor_data)
 
-    # TODO: verify the data now
+    # Verify the data now
+    if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
+        raise Exception(message="The certificate musst be for covid19")
+
+    # TODO: Verify the certificate signature
+
     # TODO: verify that the user belongs to that certificate
 
     # create a certificate object
