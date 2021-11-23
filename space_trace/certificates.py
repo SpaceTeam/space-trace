@@ -1,12 +1,13 @@
 from PIL import Image
 import base45
 import zlib
+from flask.scaffold import F
 import flynn
 import json
 from pyzbar.pyzbar import decode
 from datetime import date
 
-from space_trace.models import Certificate
+from space_trace.models import Certificate, User
 
 # Source: https://github.com/ehn-dcc-development/ehn-dcc-schema/blob/release/1.3.0/valuesets/disease-agent-targeted.json
 COVID_19_ID = "840539006"
@@ -51,8 +52,31 @@ CERT_EXPIRE_DURATION = 270
 
 def is_cert_expired(cert) -> bool:
     # TODO: distinguish between first and second stab and Jonnson
+    # TODO: this would best be done by parsing certlogic and the buisness rules
     days_since = abs((date.today() - cert.date).days)
     return days_since > CERT_EXPIRE_DURATION
+
+
+def canonicalize_name(name: str) -> str:
+    name = name.upper()
+    for c in "-.,<> ":
+        name = name.replace(c, "")
+    return name
+
+
+def assert_cert_belong_to(cert_data: any, user: User):
+    # Parse the users name form the email
+    [first_name, last_name] = user.email.split("@")[0].split(".")
+    first_name = canonicalize_name(first_name)
+    last_name = canonicalize_name(last_name)
+    first_name2 = canonicalize_name(cert_data[-260][1]["nam"]["gnt"])
+    last_name2 = canonicalize_name(cert_data[-260][1]["nam"]["fnt"])
+
+    if first_name != first_name2 or last_name != last_name2:
+        raise Exception(
+            f"The name in the certificate '{first_name2} {last_name2}' "
+            f"does not match your name '{first_name} {last_name}'!"
+        )
 
 
 def detect_cert(file, user) -> Certificate:
@@ -60,7 +84,7 @@ def detect_cert(file, user) -> Certificate:
     img = Image.open(file)
     result = decode(img)
     if result == []:
-        raise Exception(message="No QR Code was detected in the image")
+        raise Exception("No QR Code was detected in the image")
 
     # decode base45
     data_zlib = base45.b45decode(result[0].data[4:])
@@ -76,11 +100,12 @@ def detect_cert(file, user) -> Certificate:
 
     # Verify the data now
     if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
-        raise Exception(message="The certificate musst be for covid19")
+        raise Exception("The certificate must be for covid19")
 
     # TODO: Verify the certificate signature
 
-    # TODO: verify that the user belongs to that certificate
+    # Verify that the user belongs to that certificate
+    assert_cert_belong_to(data, user)
 
     # create a certificate object
     json_dump = json.dumps(data)
