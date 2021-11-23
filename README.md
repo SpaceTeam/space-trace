@@ -12,7 +12,7 @@ Install all dependencies with:
 
 ```bash
 python3 -m venv venv
-. venv/bin/activate
+source venv/bin/activate
 pip install -r requirements.txt
 export FLASK_APP=space_trace FLASK_ENV=development
 ```
@@ -58,7 +58,8 @@ performance.
 
 - [ ] Allow PDF upload
 - [ ] Allow taking pictures from the browser
-- [ ] Verify Certificates
+- [x] Verify Certificates
+- [ ] Parse current Austria regulations automatically
 - [ ] Admin interface
 
 ### Final Release
@@ -71,5 +72,7 @@ Some links I found helpful in dealing with the certificate:
 
 - [What's Inside the EU Green Pass QR Code?](https://gir.st/blog/greenpass.html)
 - [Decoding the EU Digital Covid Certificate QR code](https://www.bartwolff.com/Blog/2021/08/08/decoding-the-eu-digital-covid-certificate-qr-code)
-- [https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md](https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md)
+- [DSC TrustList Update API](https://github.com/Digitaler-Impfnachweis/certification-apis/blob/master/dsc-update/README.md)
 - [Austrian implementation of the EU Digital COVID Certificates](https://github.com/Federal-Ministry-of-Health-AT/green-pass-overview#details-on-trust-listsbusiness-rulesvalue-sets)
+- [inofficial hcert-trustlist-mirror dcc (covid trustlist)](https://github.com/section42/hcert-trustlist-mirror)
+- [lazka / pygraz-covid-cert](https://github.com/lazka/pygraz-covid-cert)

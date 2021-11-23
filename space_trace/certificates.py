@@ -1,11 +1,16 @@
 from PIL import Image
 import base45
 import zlib
-from flask.scaffold import F
+import cbor2
 import flynn
 import json
 from pyzbar.pyzbar import decode
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
+from cose.messages import CoseMessage
+from cryptography import x509
+from cose.keys import EC2Key
+import cose.headers
+import requests
 
 from space_trace.models import Certificate, User
 
@@ -50,6 +55,12 @@ VACCINE_PRODUCTS = {
 CERT_EXPIRE_DURATION = 270
 
 
+# TODO: I think this is a ugly caching solution but its the best I can come up
+# with now.
+trustlist_cache = None
+tustlist_cache_time = None
+
+
 def is_cert_expired(cert) -> bool:
     # TODO: distinguish between first and second stab and Jonnson
     # TODO: this would best be done by parsing certlogic and the buisness rules
@@ -79,6 +90,68 @@ def assert_cert_belong_to(cert_data: any, user: User):
         )
 
 
+def fetch_austria_trustlist():
+    global trustlist_cache
+    global trustlist_cache_time
+
+    # Check if the cache is still hot
+    if (
+        trustlist_cache is not None
+        and datetime.now() - trustlist_cache_time < timedelta(hours=4)
+    ):
+        print("got cache")
+        return trustlist_cache
+
+    print("got not cache")
+    r = requests.get("https://dgc-trust.qr.gv.at/trustlist")
+    if r.status_code != 200:
+        raise Exception("Unable to reach austria public key gateway")
+    content = r.content
+    data = cbor2.loads(content)
+    trustlist_cache = data
+    trustlist_cache_time = datetime.now()
+    return data
+
+
+# This code is adapted from the following repository:
+# https://github.com/lazka/pygraz-covid-cert
+def assert_cert_sign(cose_data: bytes):
+    cose_msg = CoseMessage.decode(cose_data)
+    required_kid = cose_msg.get_attr(cose.headers.KID)
+
+    trustlist = fetch_austria_trustlist()
+    for entry in trustlist["c"]:
+        kid = entry["i"]
+        cert = entry["c"]
+        if kid == required_kid:
+            break
+    else:
+        raise Exception(
+            "Unable validate certificate signature: "
+            f"kid '{required_kid}' not found"
+        )
+    found_cert = cert
+
+    NOW = datetime.now(timezone.utc)
+    cert = x509.load_der_x509_certificate(found_cert)
+    if NOW < cert.not_valid_before.replace(tzinfo=timezone.utc):
+        raise Exception("cert not valid")
+    if NOW > cert.not_valid_after.replace(tzinfo=timezone.utc):
+        raise Exception("cert not valid")
+
+    # Convert the CERT to a COSE key and verify the signature
+    # WARNING: we assume ES256 here but all other algorithms are allowed too
+    assert cose_msg.get_attr(cose.headers.Algorithm).fullname == "ES256"
+    public_key = cert.public_key()
+    x = public_key.public_numbers().x.to_bytes(32, "big")
+    y = public_key.public_numbers().y.to_bytes(32, "big")
+    cose_key = EC2Key(crv="P_256", x=x, y=y)
+    cose_msg.key = cose_key
+    if not cose_msg.verify_signature():
+        raise Exception("Unable to validate certificate signature")
+    print("Validated certificate :)")
+
+
 def detect_cert(file, user) -> Certificate:
     # decode the qr code
     img = Image.open(file)
@@ -92,6 +165,7 @@ def detect_cert(file, user) -> Certificate:
     # decompress zlib
     cose_data = zlib.decompress(data_zlib)
 
+    # TODO: I think cbor2 is a more modern library than flynn
     # decode cose
     cbor_data = flynn.decoder.loads(cose_data)[1][2]
 
@@ -102,7 +176,8 @@ def detect_cert(file, user) -> Certificate:
     if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
         raise Exception("The certificate must be for covid19")
 
-    # TODO: Verify the certificate signature
+    # Verify the certificate signature
+    assert_cert_sign(cose_data)
 
     # Verify that the user belongs to that certificate
     assert_cert_belong_to(data, user)
