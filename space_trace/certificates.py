@@ -11,6 +11,8 @@ from cryptography import x509
 from cose.keys import EC2Key
 import cose.headers
 import requests
+from werkzeug.datastructures import FileStorage
+from pdf2image import convert_from_bytes
 
 from space_trace.models import Certificate, User
 
@@ -97,7 +99,7 @@ def fetch_austria_trustlist():
     # Check if the cache is still hot
     if (
         trustlist_cache is not None
-        and datetime.now() - trustlist_cache_time < timedelta(hours=4)
+        and datetime.now() - trustlist_cache_time < timedelta(hours=12)
     ):
         print("got cache")
         return trustlist_cache
@@ -152,9 +154,14 @@ def assert_cert_sign(cose_data: bytes):
     print("Validated certificate :)")
 
 
-def detect_cert(file, user) -> Certificate:
+def detect_cert(file: FileStorage, user: User) -> Certificate:
+    # if the file is a pdf convert it to an image
+    if file.filename.rsplit(".", 1)[1].lower() == "pdf":
+        img = convert_from_bytes(file.read())[0]
+    else:
+        img = Image.open(file)
+
     # decode the qr code
-    img = Image.open(file)
     result = decode(img)
     if result == []:
         raise Exception("No QR Code was detected in the image")

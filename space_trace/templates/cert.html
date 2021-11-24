@@ -1,15 +1,32 @@
 {% extends "layout.html" %}
 {% block body %}
 <h1>Certificates</h1>
-At the moment you can only upload png images of QR codes.
-PDF and live scan will come soon.
+You can only upload images of QR codes or PDFs.
 
 <form action="/cert" method="post" enctype="multipart/form-data" class="mb-5">
-    <div class="mb-3">
-        <input class="form-control" type="file" name="file" id="file">
+    <div class="mb-3 mt-2">
+        <input class="form-control" type="file" name="file" id="file" onchange="enableForm()">
     </div>
-    <input class="btn btn-primary" type=submit value=Upload>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="checkStorage" onchange="enableForm()">
+        <label class="form-check-label" for="exampleCheck1">I agree that my vaccination certificate will be stored on
+            Space Team servers until it expires.</label>
+    </div>
+    <input class="btn btn-primary w-100" type=submit id="submit" value=Upload disabled>
 </form>
+
+<script>
+    const fileEl = document.getElementById("file");
+    const checkEl = document.getElementById("checkStorage");
+    const submitEl = document.getElementById("submit");
+    function enableForm() {
+        if (checkEl.checked && fileEl.files.length != 0) {
+            submitEl.disabled = false;
+        } else {
+            submitEl.disabled = true;
+        }
+    }
+</script>
 
 {% if certificates %}
 <h2>Uploaded certificates</h2>

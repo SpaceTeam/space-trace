@@ -16,6 +16,7 @@ Flask==2.0.2
 Flask-SQLAlchemy==2.5.1
 flynn==1.0.0b2
 greenlet==1.1.2
+gunicorn==20.1.0
 idna==3.3
 isodate==0.6.0
 itsdangerous==2.0.1
@@ -37,6 +38,7 @@ regex==2021.11.2
 requests==2.26.0
 six==1.16.0
 SQLAlchemy==1.4.26
+toml==0.10.2
 tomli==1.2.2
 typing-extensions==3.10.0.2
 urllib3==1.26.7

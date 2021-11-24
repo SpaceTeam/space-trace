@@ -4,7 +4,8 @@ Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ![image](https://user-images.githubusercontent.com/21206831/142742633-6771a208-5791-4d08-a6c3-34dc1459ab33.png)
 
 
-## Quick-Start
+## Getting started
+Setup your development environments.
 
 Install Python3.9 and zbar
 
@@ -36,6 +37,43 @@ This launces a simple webserver which can only be accessed from the localhost.
 **Note:** Don't use this server in production, it is insecure and low
 performance.
 
+## Deployment
+How we deploy this app on Ubuntu.
+
+Install the requirements with:
+```bash
+sudo apt -y install python3-venv python3-pip libzbar0 libxml2-dev libxmlsec1-dev libxmlsec1-openssl poppler-utils
+```
+
+Create a virtual env with:
+```bash
+python3 -m venv venv
+```
+
+Create the database file with:
+
+```
+$ python
+>>> from space_trace import db
+>>> db.create_all()
+```
+
+Copy `instance/config_example.toml` to `instance/config.toml` and edit all
+the fields in it.
+
+Open `space-trace.service` and edit the username and all paths to the working 
+directory.
+
+Start the systemd service with:
+
+```bash
+sudo cp space-trace.service /etc/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl enable space-trace.service
+sudo systemctl start space-trace.service 
+```
+
+
 ## Development
 
 - Use [`black`](https://github.com/psf/black) to format code
@@ -56,7 +94,7 @@ performance.
 
 ### Beta
 
-- [ ] Allow PDF upload
+- [x] Allow PDF upload
 - [ ] Allow taking pictures from the browser
 - [x] Verify Certificates
 - [ ] Parse current Austria regulations automatically
