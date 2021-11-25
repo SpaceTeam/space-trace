@@ -5,7 +5,6 @@ After=network.target
 [Service]
 User=qr-registration
 WorkingDirectory=/home/qr-registration/space-trace
-Environment="PATH=/home/qr-registration/space-trace/venv/bin"
 ExecStart=/bin/bash -c 'source /home/qr-registration/space-trace/venv/bin/activate; gunicorn -w 24 --bind 0.0.0.0:5000 space_trace:app'
 Restart=always
 
