@@ -1,5 +1,4 @@
 import os
-import subprocess
 from PIL import Image
 import base45
 import zlib
@@ -7,8 +6,7 @@ import cbor2
 import flynn
 import json
 from pyzbar.pyzbar import decode
-from datetime import date, datetime, time, timedelta, timezone
-from dateutil.parser import isoparse
+from datetime import date, datetime, time, timezone
 from cose.messages import CoseMessage
 from cryptography import x509
 from cose.keys import EC2Key
@@ -16,7 +14,6 @@ import cose.headers
 import requests
 from werkzeug.datastructures import FileStorage
 from pdf2image import convert_from_bytes
-import tempfile
 
 from space_trace import app
 from space_trace.models import Certificate, User
