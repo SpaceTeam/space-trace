@@ -170,6 +170,10 @@ def upload_cert():
         flash(message, "warning")
         return redirect(request.url)
 
+    if is_cert_expired(cert):
+        flash("This certificate is already expired", "danger")
+        return redirect(request.url)
+
     db.session.add(cert)
     db.session.commit()
     return redirect(url_for("home"))

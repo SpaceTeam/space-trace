@@ -1,3 +1,5 @@
+import os
+import subprocess
 from PIL import Image
 import base45
 import zlib
@@ -5,7 +7,8 @@ import cbor2
 import flynn
 import json
 from pyzbar.pyzbar import decode
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
+from dateutil.parser import isoparse
 from cose.messages import CoseMessage
 from cryptography import x509
 from cose.keys import EC2Key
@@ -13,7 +16,9 @@ import cose.headers
 import requests
 from werkzeug.datastructures import FileStorage
 from pdf2image import convert_from_bytes
+import tempfile
 
+from space_trace import app
 from space_trace.models import Certificate, User
 
 # Source: https://github.com/ehn-dcc-development/ehn-dcc-schema/blob/release/1.3.0/valuesets/disease-agent-targeted.json
@@ -54,20 +59,22 @@ VACCINE_PRODUCTS = {
 }
 
 
-CERT_EXPIRE_DURATION = 270
-
-
-# TODO: I think this is a ugly caching solution but its the best I can come up
-# with now.
-trustlist_cache = None
-tustlist_cache_time = None
-
-
 def is_cert_expired(cert) -> bool:
-    # TODO: distinguish between first and second stab and Jonnson
-    # TODO: this would best be done by parsing certlogic and the buisness rules
-    days_since = abs((date.today() - cert.date).days)
-    return days_since > CERT_EXPIRE_DURATION
+    hcert = json.loads(cert.data)["-260"]["1"]["v"][0]
+
+    # Check if it is the last dosis
+    if hcert["dn"] != hcert["sd"]:
+        return True
+
+    # Check if it is johnson then its only 270 days
+    if hcert["sd"] == 1 and (date.today() - cert.date).days > 270:
+        return True
+
+    # Check if 360 days since second vaccination
+    if (date.today() - cert.date).days > 360:
+        return True
+
+    return False
 
 
 def canonicalize_name(name: str) -> str:
@@ -92,27 +99,30 @@ def assert_cert_belong_to(cert_data: any, user: User):
         )
 
 
-def fetch_austria_trustlist():
-    global trustlist_cache
-    global trustlist_cache_time
-
+def fetch_austria_data(ressource: str):
     # Check if the cache is still hot
-    if (
-        trustlist_cache is not None
-        and datetime.now() - trustlist_cache_time < timedelta(hours=12)
-    ):
-        print("got cache")
-        return trustlist_cache
+    cache_filename = os.path.join(app.instance_path, f"{ressource}.cache")
+    try:
+        with open(cache_filename, "rb") as f:
+            cache_time = os.path.getmtime(f)
+            if (time.time() - cache_time) / 3600 > 12:
+                raise Exception()
 
-    print("got not cache")
-    r = requests.get("https://dgc-trust.qr.gv.at/trustlist")
+            return cbor2.loads(f.read())
+    except Exception:
+        pass
+
+    # Not in cache so lets download it
+    r = requests.get(f"https://dgc-trust.qr.gv.at/{ressource}")
     if r.status_code != 200:
         raise Exception("Unable to reach austria public key gateway")
     content = r.content
-    data = cbor2.loads(content)
-    trustlist_cache = data
-    trustlist_cache_time = datetime.now()
-    return data
+
+    # Update the cache
+    with open(cache_filename, "wb") as f:
+        f.write(content)
+
+    return cbor2.loads(content)
 
 
 # This code is adapted from the following repository:
@@ -121,7 +131,7 @@ def assert_cert_sign(cose_data: bytes):
     cose_msg = CoseMessage.decode(cose_data)
     required_kid = cose_msg.get_attr(cose.headers.KID)
 
-    trustlist = fetch_austria_trustlist()
+    trustlist = fetch_austria_data("trustlist")
     for entry in trustlist["c"]:
         kid = entry["i"]
         cert = entry["c"]

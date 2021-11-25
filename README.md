@@ -7,7 +7,7 @@ Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ## Getting started
 Setup your development environments.
 
-Install Python3.9 and zbar
+Install Python3.8 or higher, zbar, popper, libxml2
 
 Install all dependencies with:
 
