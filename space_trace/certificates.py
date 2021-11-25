@@ -24,6 +24,7 @@ from space_trace.models import Certificate, User
 # Source: https://github.com/ehn-dcc-development/ehn-dcc-schema/blob/release/1.3.0/valuesets/disease-agent-targeted.json
 COVID_19_ID = "840539006"
 
+# TODO: we should get this from the Austria API
 # Source: https://github.com/ehn-dcc-development/ehn-dcc-schema/blob/release/1.3.0/valuesets/vaccine-medicinal-product.json
 VACCINE_MANUFACTURERS = {
     "ORG-100001699": "AstraZeneca AB",
