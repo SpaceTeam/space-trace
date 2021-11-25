@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 from io import BytesIO
-from flask import session, redirect, url_for, request, flash
+from flask import session, redirect, url_for, request, flash, abort
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -158,6 +158,16 @@ def upload_cert():
     return redirect(url_for("home"))
 
 
+@app.get("/help")
+def help():
+    return render_template("help.html")
+
+
+@app.get("/statistic")
+def statistic():
+    return render_template("statistic.html")
+
+
 @app.get("/login")
 def login():
     return render_template("login.html")
@@ -212,10 +222,21 @@ def saml_response():
     return redirect(url_for("home"))
 
 
-# @app.post("/login")
-# def add_login():
-#     session["username"] = "flotschi@email.com"
-#     return redirect(url_for("visit"))
+@app.get("/login-debug")
+def login_debug():
+    if app.env != "development":
+        abort(404)
+
+    email = "debug@email.com"
+    firstname = "Testuser"
+    session["username"] = email
+    try:
+        user = User(firstname, email)
+        db.session.add(user)
+        db.session.commit()
+    except Exception:
+        pass
+    return redirect(url_for("home"))
 
 
 @app.get("/logout")

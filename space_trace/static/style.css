@@ -1,0 +1,6 @@
+.tab-link {
+  text-decoration: none;
+}
+.tab-link:hover {
+  text-decoration: underline;
+}

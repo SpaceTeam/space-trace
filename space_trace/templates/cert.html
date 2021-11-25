@@ -28,13 +28,15 @@ You can only upload images of QR codes or PDFs.
     }
 </script>
 
-{% if certificates %}
 <h2>Uploaded certificates</h2>
+{% if certificates[0] is defined %}
 <ul>
     {% for certificate in certificates %}
     <li><strong>{{certificate.date}}</strong> {{certificate.product}}, {{certificate.manufacturer}}</li>
     {% endfor %}
 </ul>
+{% else %}
+<i>No certificates uploaded.</i>
 {% endif %}
 
 {% endblock %}
