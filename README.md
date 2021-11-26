@@ -3,7 +3,6 @@
 Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ![Screenshot](https://user-images.githubusercontent.com/21206831/143572196-43998f10-e8f0-4427-a088-1c35c15b74b8.png)
 
-
 ## Getting started
 
 Setup your development environments.
@@ -119,6 +118,7 @@ sudo systemctl restart space-trace.service
 
 ### Final Release
 
+- [ ] Dark Mode
 - [ ] Smart export (by selecting infected member not dates)
 - [ ] public & private APIs so other services can integrate
 - [ ] Tests and CI Pipeline to check on every commit
