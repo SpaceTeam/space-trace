@@ -154,6 +154,11 @@ def upload_cert():
         flash("This certificate was already uploaded", "warning")
         return redirect(request.url)
 
+    flash(
+        "Successfully uploaded certificate "
+        f"from {cert.date} ({cert.manufacturer})",
+        "success",
+    )
     return redirect(url_for("home"))
 
 
