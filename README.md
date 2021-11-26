@@ -77,6 +77,21 @@ sudo systemctl enable space-trace.service
 sudo systemctl start space-trace.service
 ```
 
+The service should now be up and running 🎉
+
+To stop the service run:
+
+```bash
+sudo systemctl stop space-trace.service
+```
+
+To update the service to a new version (commit) run:
+
+```bash
+git pull
+sudo systemctl restart space-trace.service
+```
+
 ## Development
 
 - Use [`black`](https://github.com/psf/black) to format code
