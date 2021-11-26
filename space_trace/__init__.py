@@ -1,4 +1,3 @@
-import os
 import toml
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy

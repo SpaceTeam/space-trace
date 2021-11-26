@@ -1,5 +1,4 @@
 from datetime import date, datetime, timedelta
-from io import BytesIO
 from flask import session, redirect, url_for, request, flash, abort
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
@@ -212,6 +211,7 @@ def saml_response():
         db.session.commit()
 
     session["username"] = username
+    session.permanent = True
 
     self_url = OneLogin_Saml2_Utils.get_self_url(req)
     if "RelayState" in request.form and self_url != request.form["RelayState"]:
