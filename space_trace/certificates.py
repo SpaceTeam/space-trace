@@ -187,6 +187,15 @@ def detect_cert(file: FileStorage, user: User) -> Certificate:
     # decode cbor
     data = flynn.decoder.loads(cbor_data)
 
+    # Verify that this is a vaccine certificate
+    if "v" not in data[-260][1]:
+        message = "The certificate must be for a vaccination"
+        if "t" in data[-260][1]:
+            message += ", we don't allow tests"
+        if "r" in data[-260][1]:
+            message += ", we don't allow recovered"
+        raise Exception(message)
+
     # Verify the data now
     if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
         raise Exception("The certificate must be for covid19")
