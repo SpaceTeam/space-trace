@@ -3,8 +3,8 @@
 Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ![image](https://user-images.githubusercontent.com/21206831/142742633-6771a208-5791-4d08-a6c3-34dc1459ab33.png)
 
-
 ## Getting started
+
 Setup your development environments.
 
 Install Python3.8 or higher, zbar, popper, libxml2
@@ -38,14 +38,17 @@ This launces a simple webserver which can only be accessed from the localhost.
 performance.
 
 ## Deployment
+
 How we deploy this app on Ubuntu.
 
 Install the requirements with:
+
 ```bash
 sudo apt -y install python3-venv python3-pip libzbar0 libxml2-dev libxmlsec1-dev libxmlsec1-openssl poppler-utils
 ```
 
 Create a virtual env with:
+
 ```bash
 python3 -m venv venv
 ```
@@ -61,7 +64,7 @@ $ python
 Copy `instance/config_example.toml` to `instance/config.toml` and edit all
 the fields in it.
 
-Open `space-trace.service` and edit the username and all paths to the working 
+Open `space-trace.service` and edit the username and all paths to the working
 directory.
 
 Start the systemd service with:
@@ -70,9 +73,8 @@ Start the systemd service with:
 sudo cp space-trace.service /etc/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl enable space-trace.service
-sudo systemctl start space-trace.service 
+sudo systemctl start space-trace.service
 ```
-
 
 ## Development
 
@@ -97,15 +99,17 @@ sudo systemctl start space-trace.service
 - [x] Allow PDF upload
 - [ ] Allow taking pictures from the browser
 - [x] Verify Certificates
-- [ ] Parse current Austria regulations automatically
 - [ ] Admin interface
 
 ### Final Release
 
 - [ ] Smart export (by selecting infected member not dates)
 - [ ] public & private APIs so other services can integrate
+- [ ] Tests and CI Pipeline to check on every commit
+- [ ] statically type all function and add mypy to CI
 
 ## Resources
+
 Some links I found helpful in dealing with the certificate:
 
 - [What's Inside the EU Green Pass QR Code?](https://gir.st/blog/greenpass.html)
