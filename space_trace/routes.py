@@ -9,6 +9,7 @@ from space_trace import app, db
 from space_trace.certificates import (
     detect_and_attach_cert,
 )
+from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
 
 
@@ -56,11 +57,16 @@ def home():
     if visit is not None:
         visit_deadline = visit.timestamp + timedelta(hours=12)
 
+    joke = None
+    if user.email == "paul.hoeller@spaceteam.at":
+        joke = get_daily_joke()
+
     return render_template(
         "visit.html",
         user=user,
         visit=visit,
         visit_deadline=visit_deadline,
+        joke=joke,
     )
 
 
