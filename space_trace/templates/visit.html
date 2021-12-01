@@ -2,14 +2,14 @@
 {% block body %}
 
 {% if not visit %}
-<h1>Register for today</h1>
+<h1>Check in for today</h1>
 Hi {{user.name}},<br>
 to enter the HQ you need to register for contact-tracing.
 <form action="{{ url_for('home') }}" method="post">
-    <button type="submit" class="btn btn-primary w-100 mt-3">Register</button>
+    <button type="submit" class="btn btn-primary w-100 mt-3">Enter HQ</button>
 </form>
 {% else %}
-<h1>Registered 👍</h1>
+<h1>Checked in 👍</h1>
 {{user.name}}, you are registered till: <strong>{{visit_deadline}}</strong>
 <br>
 {% endif %}

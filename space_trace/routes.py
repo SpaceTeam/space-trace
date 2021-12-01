@@ -6,8 +6,10 @@ from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 
 from space_trace import app, db
-from space_trace.certificates import detect_cert, is_cert_expired
-from space_trace.models import Certificate, User, Visit
+from space_trace.certificates import (
+    detect_and_attach_cert,
+)
+from space_trace.models import User, Visit
 
 
 def init_saml_auth(req):
@@ -24,14 +26,6 @@ def prepare_flask_request(request):
         "get_data": request.args.copy(),
         "post_data": request.form.copy(),
     }
-
-
-def get_last_cert(user: User) -> Certificate:
-    return (
-        Certificate.query.filter(Certificate.user == user.id)
-        .order_by(Certificate.date.desc())
-        .first()
-    )
 
 
 def get_active_visit(user: User) -> Visit:
@@ -53,8 +47,7 @@ def home():
         return redirect(url_for("login"))
 
     # Load the certificate
-    cert = get_last_cert(user)
-    if cert is None or is_cert_expired(cert):
+    if user.vaccinated_till is None or user.vaccinated_till < date.today():
         return redirect(url_for("cert"))
 
     # Load if currently visited
@@ -66,7 +59,6 @@ def home():
     return render_template(
         "visit.html",
         user=user,
-        certificate=cert,
         visit=visit,
         visit_deadline=visit_deadline,
     )
@@ -83,8 +75,7 @@ def add_visit():
         return redirect(url_for("login"))
 
     # Verify that the user has a valid certificate
-    cert = get_last_cert(user)
-    if cert is None or is_cert_expired(cert):
+    if user.vaccinated_till is None or user.vaccinated_till < date.today():
         return redirect(url_for("cert"))
 
     # Don't enter a visit if there is already one for today
@@ -109,11 +100,12 @@ def cert():
     if user is None:
         return redirect(url_for("login"))
 
-    certs = Certificate.query.filter(Certificate.user == user.id).order_by(
-        Certificate.date.desc()
+    is_vaccinated = (
+        user.vaccinated_till is not None
+        and user.vaccinated_till > date.today()
     )
 
-    return render_template("cert.html", user=user, certificates=certs)
+    return render_template("cert.html", user=user, is_vaccinated=is_vaccinated)
 
 
 @app.post("/cert")
@@ -134,7 +126,10 @@ def upload_cert():
         return redirect(request.url)
 
     try:
-        cert = detect_cert(file, user)
+        detect_and_attach_cert(file, user)
+    except IntegrityError:
+        flash("This certificate was already uploaded", "warning")
+        return redirect(request.url)
     except Exception as e:
         if hasattr(e, "message"):
             message = e.message
@@ -143,20 +138,9 @@ def upload_cert():
         flash(message, "warning")
         return redirect(request.url)
 
-    if is_cert_expired(cert):
-        flash("This certificate is already expired", "danger")
-        return redirect(request.url)
-
-    try:
-        db.session.add(cert)
-        db.session.commit()
-    except IntegrityError:
-        flash("This certificate was already uploaded", "warning")
-        return redirect(request.url)
-
     flash(
         "Successfully uploaded certificate "
-        f"from {cert.date} ({cert.manufacturer})",
+        f"which is valid till {user.vaccinated_till}",
         "success",
     )
     return redirect(url_for("home"))
@@ -232,7 +216,7 @@ def login_debug():
     if app.env != "development":
         abort(404)
 
-    email = "debug@email.com"
+    email = "florian.freitag@email.com"
     firstname = "Testuser"
     session["username"] = email
     try:

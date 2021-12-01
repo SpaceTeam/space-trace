@@ -9,8 +9,9 @@ You can only upload images of QR codes or PDFs.
     </div>
     <div class="mb-3 form-check">
         <input type="checkbox" class="form-check-input" id="checkStorage" onchange="enableForm()">
-        <label class="form-check-label" for="exampleCheck1">I agree that my vaccination certificate will be stored on
-            Space Team servers until it expires.</label>
+        <label class="form-check-label" for="exampleCheck1">I agree that the
+            expiration date of my vaccination certificate will be stored on
+            TU Wien Space Team Servers.</label>
     </div>
     <input class="btn btn-primary w-100" type=submit id="submit" value=Upload disabled>
 </form>
@@ -28,15 +29,9 @@ You can only upload images of QR codes or PDFs.
     }
 </script>
 
-<h2>Uploaded certificates</h2>
-{% if certificates[0] is defined %}
-<ul>
-    {% for certificate in certificates %}
-    <li><strong>{{certificate.date}}</strong> {{certificate.product}}, {{certificate.manufacturer}}</li>
-    {% endfor %}
-</ul>
-{% else %}
-<i>No certificates uploaded.</i>
+{% if is_vaccinated %}
+<h5>Your vaccination status is valid till {{user.vaccinated_till}}.</h5>
 {% endif %}
+
 
 {% endblock %}

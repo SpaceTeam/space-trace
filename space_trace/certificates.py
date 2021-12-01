@@ -4,9 +4,8 @@ import base45
 import zlib
 import cbor2
 import flynn
-import json
 from pyzbar.pyzbar import decode
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from cose.messages import CoseMessage
 from cryptography import x509
 from cose.keys import EC2Key
@@ -15,8 +14,8 @@ import requests
 from werkzeug.datastructures import FileStorage
 from pdf2image import convert_from_bytes
 
-from space_trace import app
-from space_trace.models import Certificate, User
+from space_trace import app, db
+from space_trace.models import User
 
 # Source: https://github.com/ehn-dcc-development/ehn-dcc-schema/blob/release/1.3.0/valuesets/disease-agent-targeted.json
 COVID_19_ID = "840539006"
@@ -57,22 +56,28 @@ VACCINE_PRODUCTS = {
 }
 
 
-def is_cert_expired(cert) -> bool:
-    hcert = json.loads(cert.data)["-260"]["1"]["v"][0]
+def calc_vacinated_till(data) -> date:
+    hcert = data[-260][1]["v"][0]
+    vaccination_date = date.fromisoformat(hcert["dt"])
+    valid_until = None
 
     # Check if it is the last dosis
     if hcert["dn"] != hcert["sd"]:
-        return True
+        raise ("With this certificate you are not fully immunized.")
 
     # Check if it is johnson then its only 270 days
-    if hcert["sd"] == 1 and (date.today() - cert.date).days > 270:
-        return True
+    if hcert["sd"] == 1:
+        valid_until = min(
+            vaccination_date + timedelta(days=270),
+            date(2022, 1, 1),
+        )
+    else:
+        valid_until = vaccination_date + timedelta(days=360)
 
-    # Check if 360 days since second vaccination
-    if (date.today() - cert.date).days > 360:
-        return True
+    if valid_until < date.today():
+        raise ("This certificate is already expired.")
 
-    return False
+    return valid_until
 
 
 def canonicalize_name(name: str) -> str:
@@ -162,7 +167,7 @@ def assert_cert_sign(cose_data: bytes):
     print("Validated certificate :)")
 
 
-def detect_cert(file: FileStorage, user: User) -> Certificate:
+def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     # if the file is a pdf convert it to an image
     if file.filename.rsplit(".", 1)[1].lower() == "pdf":
         img = convert_from_bytes(file.read())[0]
@@ -206,15 +211,9 @@ def detect_cert(file: FileStorage, user: User) -> Certificate:
     # Verify that the user belongs to that certificate
     assert_cert_belong_to(data, user)
 
-    # create a certificate object
-    json_dump = json.dumps(data)
-    vaccination_date = date.fromisoformat(data[-260][1]["v"][0]["dt"])
-    manufacturer = VACCINE_MANUFACTURERS[data[-260][1]["v"][0]["ma"]]
-    product = VACCINE_PRODUCTS[data[-260][1]["v"][0]["mp"]]
-    return Certificate(
-        data=json_dump,
-        date=vaccination_date,
-        user=user.id,
-        manufacturer=manufacturer,
-        product=product,
+    # Update the user
+    db.session.query(User).filter(User.id == user.id).update(
+        {"vaccinated_till": calc_vacinated_till(data)}
     )
+    user = User.query.filter(User.id == user.id).first()
+    db.session.commit()
