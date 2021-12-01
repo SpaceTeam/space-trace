@@ -63,7 +63,7 @@ def calc_vacinated_till(data) -> date:
 
     # Check if it is the last dosis
     if hcert["dn"] != hcert["sd"]:
-        raise ("With this certificate you are not fully immunized.")
+        raise Exception("With this certificate you are not fully immunized.")
 
     # Check if it is johnson then its only 270 days
     if hcert["sd"] == 1:
@@ -75,7 +75,7 @@ def calc_vacinated_till(data) -> date:
         valid_until = vaccination_date + timedelta(days=360)
 
     if valid_until < date.today():
-        raise ("This certificate is already expired.")
+        raise Exception("This certificate is already expired.")
 
     return valid_until
 
@@ -211,9 +211,17 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     # Verify that the user belongs to that certificate
     assert_cert_belong_to(data, user)
 
+    # Verify that this vaccination is newer than the last one
+    vaccinated_till = calc_vacinated_till(data)
+    if (
+        user.vaccinated_till is not None
+        and user.vaccinated_till > vaccinated_till
+    ):
+        raise Exception("You already uploaded a newer certificate")
+
     # Update the user
     db.session.query(User).filter(User.id == user.id).update(
-        {"vaccinated_till": calc_vacinated_till(data)}
+        {"vaccinated_till": vaccinated_till}
     )
     user = User.query.filter(User.id == user.id).first()
     db.session.commit()
