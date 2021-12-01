@@ -1,7 +1,8 @@
 # space-trace
 
 Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
-![Screenshot](https://user-images.githubusercontent.com/21206831/143572196-43998f10-e8f0-4427-a088-1c35c15b74b8.png)
+![Screenshot](https://user-images.githubusercontent.com/21206831/144330134-d8977d7b-730c-4c93-a7c5-5b1a95098af0.png)
+
 
 ## Getting started
 
