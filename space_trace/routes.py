@@ -135,7 +135,7 @@ def upload_cert():
             message = e.message
         else:
             message = str(e)
-        flash(message, "warning")
+        flash(message, "danger")
         return redirect(request.url)
 
     flash(

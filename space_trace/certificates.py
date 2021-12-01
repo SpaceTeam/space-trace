@@ -213,11 +213,11 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
 
     # Verify that this vaccination is newer than the last one
     vaccinated_till = calc_vacinated_till(data)
-    if (
-        user.vaccinated_till is not None
-        and user.vaccinated_till > vaccinated_till
-    ):
-        raise Exception("You already uploaded a newer certificate")
+    if user.vaccinated_till is not None:
+        if user.vaccinated_till > vaccinated_till:
+            raise Exception("You already uploaded a newer certificate")
+        elif user.vaccinated_till == vaccinated_till:
+            raise Exception("You already uploaded this certificate")
 
     # Update the user
     db.session.query(User).filter(User.id == user.id).update(
