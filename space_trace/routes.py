@@ -159,7 +159,20 @@ def help():
 
 @app.get("/statistic")
 def statistic():
-    return render_template("statistic.html")
+    total_users = User.query.count()
+    total_visits = Visit.query.count()
+
+    cutoff_timestamp = datetime.now() - timedelta(hours=12)
+    active_visits = Visit.query.filter(
+        Visit.timestamp > cutoff_timestamp
+    ).count()
+
+    return render_template(
+        "statistic.html",
+        total_users=total_users,
+        total_visits=total_visits,
+        active_visits=active_visits,
+    )
 
 
 @app.get("/login")
