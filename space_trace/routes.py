@@ -1,4 +1,6 @@
 from datetime import date, datetime, timedelta
+from functools import wraps
+import flask
 from flask import session, redirect, url_for, request, flash, abort
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
@@ -12,21 +14,46 @@ from space_trace.certificates import (
 from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
 
+# Decorators
+def require_login(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if "username" not in session:
+            return redirect(url_for("login"))
 
-def init_saml_auth(req):
-    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_PATH"])
-    return auth
+        user = User.query.filter(User.email == session["username"]).first()
+        if user is None:
+            return redirect(url_for("login"))
+
+        flask.g.user = user
+        return f(*args, **kwargs)
+
+    return wrapper
 
 
-def prepare_flask_request(request):
-    # If server is behind proxys or balancers use the HTTP_X_FORWARDED fields
-    return {
-        "https": "on" if request.scheme == "https" else "off",
-        "http_host": request.host,
-        "script_name": request.path,
-        "get_data": request.args.copy(),
-        "post_data": request.form.copy(),
-    }
+def require_admin(f):
+    @wraps(f)
+    @require_login
+    def wrapper(*args, **kwargs):
+        if flask.g.user.email not in app.config["ADMINS"]:
+            flash("You are not an admin, what were you thinking?", "danger")
+            return redirect(url_for("home"))
+
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+def require_vaccinated(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        user = flask.g.user
+        if user.vaccinated_till is None or user.vaccinated_till < date.today():
+            return redirect(url_for("cert"))
+
+        return f(*args, **kwargs)
+
+    return wrapper
 
 
 def get_active_visit(user: User) -> Visit:
@@ -38,18 +65,10 @@ def get_active_visit(user: User) -> Visit:
 
 
 @app.get("/")
+@require_login
+@require_vaccinated
 def home():
-    # Load the user
-    if "username" not in session:
-        return redirect(url_for("login"))
-
-    user = User.query.filter(User.email == session["username"]).first()
-    if user is None:
-        return redirect(url_for("login"))
-
-    # Load the certificate
-    if user.vaccinated_till is None or user.vaccinated_till < date.today():
-        return redirect(url_for("cert"))
+    user = flask.g.user
 
     # Load if currently visited
     visit = get_active_visit(user)
@@ -58,7 +77,7 @@ def home():
         visit_deadline = visit.timestamp + timedelta(hours=12)
 
     joke = None
-    if user.email == "paul.hoeller@spaceteam.at":
+    if user.email in app.config["JOKE_TARGETS"]:
         joke = get_daily_joke()
 
     return render_template(
@@ -71,18 +90,10 @@ def home():
 
 
 @app.post("/")
+@require_login
+@require_vaccinated
 def add_visit():
-    # Load the user
-    if "username" not in session:
-        return redirect(url_for("login"))
-
-    user = User.query.filter(User.email == session["username"]).first()
-    if user is None:
-        return redirect(url_for("login"))
-
-    # Verify that the user has a valid certificate
-    if user.vaccinated_till is None or user.vaccinated_till < date.today():
-        return redirect(url_for("cert"))
+    user = flask.g.user
 
     # Don't enter a visit if there is already one for today
     visit = get_active_visit(user)
@@ -90,6 +101,7 @@ def add_visit():
         flash("You are already registered for today", "warning")
         return redirect(url_for("home"))
 
+    # Create a new visit
     visit = Visit(date.today(), user.id)
     db.session.add(visit)
     db.session.commit()
@@ -97,14 +109,9 @@ def add_visit():
 
 
 @app.get("/cert")
+@require_login
 def cert():
-    # load the user
-    if "username" not in session:
-        return redirect(url_for("login"))
-
-    user = User.query.filter(User.email == session["username"]).first()
-    if user is None:
-        return redirect(url_for("login"))
+    user = flask.g.user
 
     is_vaccinated = (
         user.vaccinated_till is not None
@@ -115,14 +122,9 @@ def cert():
 
 
 @app.post("/cert")
+@require_login
 def upload_cert():
-    # load the user
-    if "username" not in session:
-        return redirect(url_for("login"))
-
-    user = User.query.filter(User.email == session["username"]).first()
-    if user is None:
-        return redirect(url_for("login"))
+    user = flask.g.user
 
     file = request.files["file"]
     # If the user does not select a file, the browser submits an
@@ -152,6 +154,18 @@ def upload_cert():
     return redirect(url_for("home"))
 
 
+@app.get("/admin")
+@require_admin
+def admin():
+    return render_template("admin.html", user=flask.g.user)
+
+
+@app.get("/contacts.csv")
+@require_admin
+def contacts_csv():
+    return "Not yet implemented"
+
+
 @app.get("/help")
 def help():
     return render_template("help.html")
@@ -173,6 +187,22 @@ def statistic():
         total_visits=total_visits,
         active_visits=active_visits,
     )
+
+
+def init_saml_auth(req):
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_PATH"])
+    return auth
+
+
+def prepare_flask_request(request):
+    # If server is behind proxys or balancers use the HTTP_X_FORWARDED fields
+    return {
+        "https": "on" if request.scheme == "https" else "off",
+        "http_host": request.host,
+        "script_name": request.path,
+        "get_data": request.args.copy(),
+        "post_data": request.form.copy(),
+    }
 
 
 @app.get("/login")
@@ -235,7 +265,7 @@ def login_debug():
     if app.env != "development":
         abort(404)
 
-    email = "florian.freitag@email.com"
+    email = app.config["DEBUG_EMAIL"]
     firstname = "Testuser"
     session["username"] = email
     try:

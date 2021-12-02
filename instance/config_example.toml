@@ -2,6 +2,26 @@
 # python3 -c 'import secrets; print(secrets.token_hex())'
 SECRET_KEY="dev"
 
+# Some SAML and SQLAlchemy configuration (don't change)
 SAML_PATH="space_trace/saml"
 SQLALCHEMY_DATABASE_URI="sqlite:///../instance/trace.db"
 SQLALCHEMY_TRACK_MODIFICATIONS=false
+
+# Here are the admins defined of this application. Only these users have the 
+# ability to export members in case of a corona case.
+# IMPORTANT! this also means the have access to basically all peronal data this
+# service stores, so be very carefull whith the persons you allow here!
+ADMINS=["flofriday@email.com", "admin@email.com"]
+
+# There are some jokes (a easteregg) in this service. This field defines who
+# gets to see them. Be carefull, they may be too dark for some users and were
+# written with a specific person in mind.
+JOKE_TARGETS=["paul@email.com", "luis@email.com"]
+
+# You can ignore this field for production
+# In a development environment this is the email the test user gets. You can
+# login as the testuser by visiting /login-debug.
+# This is just a workaournd as saml doesn't work with local environments and
+# the email is important as the name in the certificate must be matched to 
+# your email.
+DEBUG_EMAIL="Robert.Nystrom@email.com"
