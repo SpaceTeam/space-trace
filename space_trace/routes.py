@@ -158,6 +158,24 @@ def upload_cert():
     return redirect(url_for("home"))
 
 
+@app.post("/cert-delete")
+@require_login
+def delete_cert():
+    user = flask.g.user
+
+    if user.vaccinated_till == None:
+        flash("You don't have a certificate to delete", "warning")
+        return redirect(url_for("cert"))
+
+    db.session.query(User).filter(User.id == user.id).update(
+        {"vaccinated_till": None}
+    )
+    db.session.commit()
+
+    flash("Successfully deleted your certificate", "success")
+    return redirect(url_for("cert"))
+
+
 @app.get("/admin")
 @require_admin
 def admin():

@@ -11,7 +11,9 @@ You can only upload images of QR codes or PDFs.
         <input type="checkbox" class="form-check-input" id="checkStorage" onchange="enableForm()">
         <label class="form-check-label" for="exampleCheck1">I agree that the
             expiration date of my vaccination certificate will be stored on
-            TU Wien Space Team Servers.</label>
+            TU Wien Space Team Servers and that I read and agree to the
+            <a href="/static/Zustimmungserklaerung.pdf">Zustimmungserklärung</a>.
+        </label>
     </div>
     <input class="btn btn-primary w-100" type=submit id="submit" value=Upload disabled>
 </form>
@@ -31,6 +33,9 @@ You can only upload images of QR codes or PDFs.
 
 {% if is_vaccinated %}
 <h5>Your vaccination status is valid till {{user.vaccinated_till}}.</h5>
+<form action="{{url_for('delete_cert')}}" method="post">
+    <button class="btn btn-outline-danger">Delete</button>
+</form>
 {% endif %}
 
 
