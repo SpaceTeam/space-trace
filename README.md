@@ -3,7 +3,6 @@
 Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ![Screenshot](https://user-images.githubusercontent.com/21206831/144330134-d8977d7b-730c-4c93-a7c5-5b1a95098af0.png)
 
-
 ## Getting started
 
 Setup your development environments.
@@ -108,14 +107,13 @@ sudo systemctl restart space-trace.service
 - [x] Login with SAML
 - [x] Upload Picture of QR Code (no verification)
 - [x] Register for a day
-- [ ] Export contacts on day basis
+- [x] Export contacts on day basis
 
 ### Beta
 
 - [x] Allow PDF upload
-- [ ] Allow taking pictures from the browser
 - [x] Verify Certificates
-- [ ] Admin interface
+- [x] Admin interface
 
 ### Final Release
 
@@ -124,6 +122,7 @@ sudo systemctl restart space-trace.service
 - [ ] public & private APIs so other services can integrate
 - [ ] Tests and CI Pipeline to check on every commit
 - [ ] statically type all function and add mypy to CI
+- [ ] Continous Delivery (gitops?)
 
 ## Resources
 
