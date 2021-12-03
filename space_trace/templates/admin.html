@@ -2,8 +2,11 @@
 {% block body %}
 <h1>Admin</h1>
 
-<h3>Export contacts</h3>
-<form action="{{url_for('contacts_csv')}}" method="get" class="row g-3">
+<p>
+<h3>Contact export</h3>
+<strong>Note:</strong> These dates are inclusive. <br>
+This means they start at 00:00 and end at 23:59.
+<form action="{{url_for('contacts_csv')}}" method="get" class="row g-3 mt-2">
     <div class="col-md-6">
         <label for="startDate" class="form-label">Start</label>
         <input type="date" class="form-control" id="startDate" name="startDate" onchange="changeListener()">
@@ -12,22 +15,46 @@
         <label for="endDate" class="form-label">End</label>
         <input type="date" class="form-control" id="endDate" name="endDate" onchange="changeListener()">
     </div>
+    <div class="col-12">
+        <span class="text-danger" id="error"></span>
+    </div>
 
     <div class="col-12">
         <button class="btn btn-primary" id="export" disabled onclick="">Export CSV</button>
     </div>
 </form>
+</p>
+
+<p>
+<h3 class="mt-5">Smart contact export</h3>
+Person-based export will come soon 😉
+</p>
+
+<p>
+<h3 class="mt-5">Info for nerds</h3>
+The server thinks it is: {{now}}
+</p>
 
 <script>
     const startEl = document.getElementById("startDate");
     const endEl = document.getElementById("endDate");
     const exportEl = document.getElementById("export");
+    const errorEl = document.getElementById("error");
+
     function changeListener() {
         if (startEl.valueAsDate == null || endEl.valueAsDate == null) {
             exportEl.disabled = true;
-        } else {
-            exportEl.disabled = false;
+            return;
         }
+
+        if (startEl.valueAsDate > endEl.valueAsDate) {
+            errorEl.innerText = "The end date must be after the start date.";
+            exportEl.disabled = true;
+            return;
+        }
+
+        errorEl.innerText = "";
+        exportEl.disabled = false;
     }
 </script>
 

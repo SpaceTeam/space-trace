@@ -1,7 +1,11 @@
 from datetime import date, datetime, timedelta
 from functools import wraps
+from io import StringIO
+import csv
+
 import flask
 from flask import session, redirect, url_for, request, flash, abort
+from flask.helpers import make_response
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -157,13 +161,61 @@ def upload_cert():
 @app.get("/admin")
 @require_admin
 def admin():
-    return render_template("admin.html", user=flask.g.user)
+    return render_template("admin.html", user=flask.g.user, now=datetime.now())
 
 
 @app.get("/contacts.csv")
 @require_admin
 def contacts_csv():
-    return "Not yet implemented"
+    format = "%Y-%m-%d"
+    start = datetime.strptime(request.args.get("startDate"), format)
+    end = datetime.strptime(request.args.get("endDate"), format)
+    if start > end:
+        flash("End date cannot be before start date.", "warning")
+        return redirect("admin")
+
+    # This may look weired but we need to do a bit of arithmetic with both
+    # timestamps. At the moment both timestamps point to the
+    # start of the day (0:00) but end should point to the last minute so if both
+    # point to the same day one whole day gets selected.
+    # Actually start should point to 12h before that because members that only
+    # logged in 12h bevore are still considered as in the HQ.
+    start = start - timedelta(hours=12)
+    end = end + timedelta(hours=24)
+
+    # Get all email adresses of people logged in that time period
+    stmt = (
+        db.session.query(User)
+        .filter(User.id == Visit.user)
+        .filter(db.and_(Visit.timestamp > start, Visit.timestamp < end))
+    )
+    print(stmt)
+    print(start)
+    print(end)
+    users = stmt.all()
+    print(users)
+
+    if len(users) == 0:
+        flash("No members were in the HQ at that time 👍", "success")
+        return redirect("admin")
+
+    # Convert the mails to names
+    names = []
+    for user in users:
+        first, last = user.email.split("@")[0].split(".")
+        names.append((first, last))
+
+    # Convert to a csv
+    si = StringIO()
+    cw = csv.writer(si)
+
+    for name in names:
+        cw.writerow(name)
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 @app.get("/help")
