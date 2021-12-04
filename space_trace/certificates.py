@@ -30,14 +30,16 @@ def calc_vacinated_till(data) -> date:
     if hcert["dn"] != hcert["sd"]:
         raise Exception("With this certificate you are not fully immunized.")
 
-    # Check if it is johnson then its only 270 days
+    # Check if it is johnson then its only 270 days or till first of 2022
     if hcert["sd"] == 1:
         valid_until = min(
             vaccination_date + timedelta(days=270),
-            date(2022, 1, 1),
+            date(2022, 1, 3),
         )
+
+    # Otherwise it is 270 days
     else:
-        valid_until = vaccination_date + timedelta(days=360)
+        valid_until = vaccination_date + timedelta(days=270)
 
     if valid_until < date.today():
         raise Exception("This certificate is already expired.")
