@@ -236,6 +236,7 @@ def contacts_csv():
     # Convert to a csv
     si = StringIO()
     cw = csv.writer(si)
+    cw.writerow(["first name", "last name"])
 
     for name in names:
         cw.writerow(name)
