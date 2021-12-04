@@ -25,8 +25,6 @@ def maybe_load_user(f):
         user = None
         if "username" in session:
             user = User.query.filter(User.email == session["username"]).first()
-            if user is None:
-                return redirect(url_for("login"))
 
         flask.g.user = user
         return f(*args, **kwargs)
@@ -359,10 +357,7 @@ def saml_response():
         # the value of the request.form['RelayState'] is a trusted URL.
         return redirect(auth.redirect_to(request.form["RelayState"]))
 
-    if user.vaccinated_till > date.today():
-        return redirect(url_for("home"))
-
-    return redirect(url_for("cert"))
+    return redirect(url_for("home"))
 
 
 @app.get("/login-debug")

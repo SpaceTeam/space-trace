@@ -5,11 +5,8 @@
     <strong>{{total_users}}</strong> members are already using this tool, and
     checked in <strong>{{total_visits}}</strong> times.
 </p>
-<p>
-    At the moment <strong>{{active_visits}}</strong> members are in the HQ.
-</p>
 
-<h3>Currently in the HQ</h3>
+<h3>Currently in the HQ ({{active_visits}})</h3>
 {% if user is none %}
 <i>This is only visible to logged in users.</i>
 {% else %}

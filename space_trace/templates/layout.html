@@ -39,7 +39,9 @@
             </a>
         </div>
         <div class="container-sm mt-1 text-center">
-            <a href="{{url_for('home')}}" class="tab-link">Home</a> ·
+            {% if user is defined and user is not none %}
+            <a href="{{url_for('home')}}" class="tab-link">Check-In</a> ·
+            {% endif %}
             <a href="{{url_for('statistic')}}" class="tab-link">Statistic</a> ·
             {% if user is defined and user is not none %}
             <a href="{{url_for('cert')}}" class="tab-link">Certificate</a> ·
@@ -70,9 +72,7 @@
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container">
             <span class="text-muted">
-                <a class="text-muted" href="{{url_for('home')}}">Home</a> ·
                 <a class="text-muted" href="{{url_for('help')}}">Help</a> ·
-                <a class="text-muted" href="{{url_for('statistic')}}">Statistic</a> ·
                 <a class="text-muted" href="https://github.com/SpaceTeam/space-trace">GitHub</a> ·
                 <a class="text-muted" href="/static/Datenschutzerklaerung.pdf">Datenschutzerklärung</a>
             </span>
