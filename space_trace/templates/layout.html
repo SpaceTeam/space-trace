@@ -38,13 +38,16 @@
                 <img class="mt-5" src="/static/logo.png" alt="" style="max-width: 150px; width:60vw">
             </a>
         </div>
-        {% if user is defined %}
         <div class="container-sm mt-1 text-center">
             <a href="{{url_for('home')}}" class="tab-link">Home</a> ·
-            <a href="{{url_for('cert')}}" class="tab-link">Certificates</a> ·
+            <a href="{{url_for('statistic')}}" class="tab-link">Statistic</a> ·
+            {% if user is defined and user is not none %}
+            <a href="{{url_for('cert')}}" class="tab-link">Certificate</a> ·
             <a href="{{url_for('logout')}}" class="tab-link">Logout</a>
+            {% else %}
+            <a href="{{url_for('login')}}" class="tab-link">Login</a>
+            {% endif %}
         </div>
-        {% endif %}
 
 
         <div class="container-sm mt-4" style="max-width: 600px;">

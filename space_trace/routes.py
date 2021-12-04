@@ -19,6 +19,21 @@ from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
 
 # Decorators
+def maybe_load_user(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        user = None
+        if "username" in session:
+            user = User.query.filter(User.email == session["username"]).first()
+            if user is None:
+                return redirect(url_for("login"))
+
+        flask.g.user = user
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
 def require_login(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -53,6 +68,7 @@ def require_vaccinated(f):
     def wrapper(*args, **kwargs):
         user = flask.g.user
         if user.vaccinated_till is None or user.vaccinated_till < date.today():
+            flash("You need to upload a vaccination certificate.", "info")
             return redirect(url_for("cert"))
 
         return f(*args, **kwargs)
@@ -202,16 +218,12 @@ def contacts_csv():
     end = end + timedelta(hours=24)
 
     # Get all email adresses of people logged in that time period
-    stmt = (
+    users = (
         db.session.query(User)
         .filter(User.id == Visit.user)
         .filter(db.and_(Visit.timestamp > start, Visit.timestamp < end))
+        .all()
     )
-    print(stmt)
-    print(start)
-    print(end)
-    users = stmt.all()
-    print(users)
 
     if len(users) == 0:
         flash("No members were in the HQ at that time 👍", "success")
@@ -237,11 +249,13 @@ def contacts_csv():
 
 
 @app.get("/help")
+@maybe_load_user
 def help():
-    return render_template("help.html")
+    return render_template("help.html", user=flask.g.user)
 
 
 @app.get("/statistic")
+@maybe_load_user
 def statistic():
     total_users = User.query.count()
     total_visits = Visit.query.count()
@@ -251,11 +265,29 @@ def statistic():
         Visit.timestamp > cutoff_timestamp
     ).count()
 
+    active_users = None
+    if flask.g.user is not None:
+        users = (
+            db.session.query(User)
+            .filter(User.id == Visit.user)
+            .filter(Visit.timestamp > cutoff_timestamp)
+            .all()
+        )
+
+        active_users = []
+        for user in users:
+            first, last = user.email.split("@")[0].split(".")
+            active_users.append((first.capitalize(), last.capitalize()))
+
+        active_users = sorted(active_users, key=lambda n: n[0])
+
     return render_template(
         "statistic.html",
+        user=flask.g.user,
         total_users=total_users,
         total_visits=total_visits,
         active_visits=active_visits,
+        active_users=active_users,
     )
 
 
@@ -327,7 +359,10 @@ def saml_response():
         # the value of the request.form['RelayState'] is a trusted URL.
         return redirect(auth.redirect_to(request.form["RelayState"]))
 
-    return redirect(url_for("home"))
+    if user.vaccinated_till > date.today():
+        return redirect(url_for("home"))
+
+    return redirect(url_for("cert"))
 
 
 @app.get("/login-debug")
