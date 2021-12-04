@@ -1,4 +1,3 @@
-import random
 from datetime import date
 
 _jokes = [
@@ -37,5 +36,4 @@ _jokes = [
 
 
 def get_daily_joke() -> str:
-    rgn = random.Random(date.today().toordinal())
-    return rgn.choice(_jokes)
+    return _jokes(date.today().toordinal() % len(_jokes))
