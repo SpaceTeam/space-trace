@@ -18,7 +18,7 @@ from space_trace.certificates import (
 from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
 
-# Decorators
+
 def maybe_load_user(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -86,7 +86,7 @@ def get_active_visit(user: User) -> Visit:
 @require_login
 @require_vaccinated
 def home():
-    user = flask.g.user
+    user: User = flask.g.user
 
     visit = get_active_visit(user)
     visit_deadline = None
@@ -101,7 +101,8 @@ def home():
     if expires_in < timedelta(days=21):
         color = "warning" if expires_in > timedelta(days=7) else "danger"
         flash(
-            f"Your vaccination certificate will expire in {expires_in} days.",
+            "Your vaccination certificate will expire "
+            f"in {expires_in.days} days.",
             color,
         )
 
@@ -118,7 +119,7 @@ def home():
 @require_login
 @require_vaccinated
 def add_visit():
-    user = flask.g.user
+    user: User = flask.g.user
 
     # Don't enter a visit if there is already one for today
     visit = get_active_visit(user)
@@ -127,7 +128,7 @@ def add_visit():
         return redirect(url_for("home"))
 
     # Create a new visit
-    visit = Visit(date.today(), user.id)
+    visit = Visit(datetime.now(), user.id)
     db.session.add(visit)
     db.session.commit()
     return redirect(url_for("home"))
@@ -136,7 +137,7 @@ def add_visit():
 @app.get("/cert")
 @require_login
 def cert():
-    user = flask.g.user
+    user: User = flask.g.user
 
     is_vaccinated = (
         user.vaccinated_till is not None
@@ -149,7 +150,7 @@ def cert():
 @app.post("/cert")
 @require_login
 def upload_cert():
-    user = flask.g.user
+    user: User = flask.g.user
 
     file = request.files["file"]
     # If the user does not select a file, the browser submits an
@@ -182,10 +183,10 @@ def upload_cert():
 @app.post("/cert-delete")
 @require_login
 def delete_cert():
-    user = flask.g.user
+    user: User = flask.g.user
 
-    if user.vaccinated_till == None:
-        flash("You don't have a certificate to delete", "warning")
+    if user.vaccinated_till is None:
+        flash("You don't have a certificate to delete", "danger")
         return redirect(url_for("cert"))
 
     db.session.query(User).filter(User.id == user.id).update(
@@ -215,8 +216,8 @@ def contacts_csv():
 
     # This may look weired but we need to do a bit of arithmetic with both
     # timestamps. At the moment both timestamps point to the
-    # start of the day (0:00) but end should point to the last minute so if both
-    # point to the same day one whole day gets selected.
+    # start of the day (0:00) but end should point to the last minute so if
+    # both point to the same day one whole day gets selected.
     # Actually start should point to 12h before that because members that only
     # logged in 12h bevore are still considered as in the HQ.
     start = start - timedelta(hours=12)
@@ -361,8 +362,8 @@ def saml_response():
 
     self_url = OneLogin_Saml2_Utils.get_self_url(req)
     if "RelayState" in request.form and self_url != request.form["RelayState"]:
-        # To avoid 'Open Redirect' attacks, before execute the redirection confirm
-        # the value of the request.form['RelayState'] is a trusted URL.
+        # To avoid 'Open Redirect' attacks, before execute the redirection
+        # confirm the value of the request.form['RelayState'] is a trusted URL.
         return redirect(auth.redirect_to(request.form["RelayState"]))
 
     return redirect(url_for("home"))
