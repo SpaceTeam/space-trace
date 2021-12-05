@@ -14,7 +14,7 @@ to enter the HQ you need to register for contact-tracing.
 </form>
 {% else %}
 <h1>Checked in 👍</h1>
-{{user.name}}, you are registered till: <strong>{{visit_deadline}}</strong>
+{{user.name}}, you are registered till: <strong>{{visit_deadline.strftime('%H:%M %A (%Y-%m-%d)')}}</strong>
 <br>
 {% endif %}
 

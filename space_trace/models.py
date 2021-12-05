@@ -15,7 +15,7 @@ class User(db.Model):
 
     __table_args__ = (db.Index("idx_users_email", email),)
 
-    def __init__(self, name: str = None, email: str = None):
+    def __init__(self, name: str, email: str):
         self.name = name
         self.email = email
 
@@ -26,14 +26,14 @@ class User(db.Model):
 class Visit(db.Model):
     __tablename__ = "visits"
     id: int = db.Column(db.Integer, primary_key=True)
-    user: str = db.Column(db.ForeignKey("users.id"), nullable=False)
+    user: int = db.Column(db.ForeignKey("users.id"), nullable=False)
     timestamp: datetime = db.Column(
         db.DateTime, nullable=False, default=db.func.now()
     )
 
     __table_args__ = (db.Index("idx_visits_user", user),)
 
-    def __init__(self, timestamp: datetime = None, user_id: int = None):
+    def __init__(self, timestamp: datetime, user_id: int):
         self.timestamp = timestamp
         self.user = user_id
 
