@@ -88,7 +88,6 @@ def get_active_visit(user: User) -> Visit:
 def home():
     user = flask.g.user
 
-    # Load if currently visited
     visit = get_active_visit(user)
     visit_deadline = None
     if visit is not None:
@@ -97,6 +96,14 @@ def home():
     joke = None
     if user.email in app.config["JOKE_TARGETS"]:
         joke = get_daily_joke()
+
+    expires_in = user.vaccinated_till - date.today()
+    if expires_in < timedelta(days=21):
+        color = "warning" if expires_in > timedelta(days=7) else "danger"
+        flash(
+            f"Your vaccination certificate will expire in {expires_in} days.",
+            color,
+        )
 
     return render_template(
         "visit.html",
