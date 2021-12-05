@@ -8,8 +8,9 @@
 
 <h3>Currently in the HQ ({{active_visits}})</h3>
 {% if user is none %}
-<i>This is only visible to logged in users.</i>
+🔒 <i>Only logged in users can see the names.</i>
 {% else %}
+{% if active_users|length > 0%}
 <table class="table">
     <thead>
         <tr>
@@ -30,5 +31,8 @@
         {% endfor %}
     </tbody>
 </table>
+{%else%}
+<i>There is nobody to see.</i>
+{% endif %}
 {% endif %}
 {% endblock %}
