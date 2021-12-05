@@ -36,4 +36,4 @@ _jokes = [
 
 
 def get_daily_joke() -> str:
-    return _jokes[date.today().toordinal() % len(_jokes)]
+    return _jokes[(date.today().toordinal() + 4) % len(_jokes)]
