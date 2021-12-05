@@ -3,12 +3,9 @@
 Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ![Screenshot](https://user-images.githubusercontent.com/21206831/144690589-8ba45b74-cd64-4dd8-8796-748f5ea0fa78.png)
 
-
 ## Getting started
 
-Setup your development environments.
-
-Install Python3.8 or higher, zbar, popper, libxml2
+Install Python3.8 (or higher), zbar, popper, libxml2
 
 Install all dependencies with:
 
@@ -17,19 +14,6 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 export FLASK_APP=space_trace FLASK_ENV=development
-```
-
-Create the database file with:
-
-```
-$ python
->>> from space_trace import db
->>> db.create_all()
-```
-
-Start the server with
-
-```
 flask run
 ```
 
@@ -52,14 +36,6 @@ Create a virtual env with:
 
 ```bash
 python3 -m venv venv
-```
-
-Create the database file with:
-
-```
-$ python
->>> from space_trace import db
->>> db.create_all()
 ```
 
 Copy `instance/config_example.toml` to `instance/config.toml` and edit all
