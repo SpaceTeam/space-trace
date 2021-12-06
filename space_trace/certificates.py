@@ -59,12 +59,14 @@ def assert_cert_belong_to(cert_data: any, user: User):
     [first_name, last_name] = user.email.split("@")[0].split(".")
     first_name = canonicalize_name(first_name)
     last_name = canonicalize_name(last_name)
-    first_name2 = canonicalize_name(cert_data[-260][1]["nam"]["gnt"])
-    last_name2 = canonicalize_name(cert_data[-260][1]["nam"]["fnt"])
+    first_name_cert = canonicalize_name(cert_data[-260][1]["nam"]["gnt"])
+    last_name_cert = canonicalize_name(cert_data[-260][1]["nam"]["fnt"])
 
-    if first_name != first_name2 or last_name != last_name2:
+    # Using in because sometimes the emails don't contain the full name
+    if first_name in first_name_cert or last_name in last_name_cert:
         raise Exception(
-            f"The name in the certificate '{first_name2} {last_name2}' "
+            "The name in the certificate "
+            f" '{first_name_cert} {last_name_cert}' "
             f"does not match your name '{first_name} {last_name}'!"
         )
 
