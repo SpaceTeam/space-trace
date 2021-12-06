@@ -63,7 +63,7 @@ def assert_cert_belong_to(cert_data: any, user: User):
     last_name_cert = canonicalize_name(cert_data[-260][1]["nam"]["fnt"])
 
     # Using in because sometimes the emails don't contain the full name
-    if first_name in first_name_cert or last_name in last_name_cert:
+    if first_name not in first_name_cert or last_name not in last_name_cert:
         raise Exception(
             "The name in the certificate "
             f" '{first_name_cert} {last_name_cert}' "
