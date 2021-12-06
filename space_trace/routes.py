@@ -96,6 +96,10 @@ def home():
     joke = None
     if user.email in app.config["JOKE_TARGETS"]:
         joke = get_daily_joke()
+    elif user.email in app.config["DISAPPOINTED_USERS"]:
+        joke = "So sorry that you cannot have another developer. "
+        "Currently all of our developers are busy fixing edge-cases they "
+        "forgot they put in last night at 3am."
 
     expires_in = user.vaccinated_till - date.today()
     if expires_in < timedelta(days=21):

@@ -18,6 +18,9 @@ ADMINS=["flofriday@email.com", "admin@email.com"]
 # written with a specific person in mind.
 JOKE_TARGETS=["paul@email.com", "luis@email.com"]
 
+# Just some users who were annoyed and deserve some jokes.
+DISAPPOINTED_USERS=["silvia.tirler@spaceteam.at"]
+
 # You can ignore this field for production
 # In a development environment this is the email the test user gets. You can
 # login as the testuser by visiting /login-debug.
