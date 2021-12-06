@@ -205,7 +205,21 @@ def delete_cert():
 @app.get("/admin")
 @require_admin
 def admin():
-    return render_template("admin.html", user=flask.g.user, now=datetime.now())
+    q = db.session.query(
+        db.func.strftime("%H", Visit.timestamp), db.func.count(Visit.id)
+    ).group_by(db.func.strftime("%H", Visit.timestamp))
+    checkin_per_hour = {}
+    checkin_per_hour["labels"] = [f"{i:02d}" for i in range(24)]
+    checkin_per_hour["data"] = [0 for i in range(24)]
+    for row in q:
+        checkin_per_hour["data"][int(row[0])] = row[1]
+
+    return render_template(
+        "admin.html",
+        user=flask.g.user,
+        checkin_per_hour=checkin_per_hour,
+        now=datetime.now(),
+    )
 
 
 @app.get("/contacts.csv")

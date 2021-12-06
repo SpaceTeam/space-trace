@@ -30,10 +30,7 @@ This means they start at 00:00 and end at 23:59.
 Person-based export will come soon 😉
 </p>
 
-<p>
-<h3 class="mt-5">Info for nerds</h3>
-The server thinks it is: {{now}}
-</p>
+
 
 <script>
     const startEl = document.getElementById("startDate");
@@ -57,5 +54,52 @@ The server thinks it is: {{now}}
         exportEl.disabled = false;
     }
 </script>
+
+<h3>Check ins per hour</h3>
+See when people check in.
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+
+    const labels = [
+        {% for item in checkin_per_hour['labels'] %}
+    '{{item}}',
+        {% endfor %}
+    ];
+
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'Check ins per hour',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [
+                {% for item in checkin_per_hour['data'] %}
+    {{ item }},
+        {% endfor %}
+            ],
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {}
+    };
+
+    const myChart = new Chart(
+        document.getElementById('myChart'),
+        config
+    );
+</script>
+
+<p>
+<h3 class="mt-5">Info for nerds</h3>
+The server thinks it is: {{now}}
+</p>
+
 
 {% endblock %}
