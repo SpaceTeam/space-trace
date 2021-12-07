@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 from functools import wraps
 from io import StringIO
+from traceback import format_exception
 import csv
 
 import flask
@@ -10,6 +11,7 @@ from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from werkzeug.exceptions import InternalServerError
 
 from space_trace import app, db
 from space_trace.certificates import (
@@ -408,3 +410,25 @@ def login_debug():
 def logout():
     session.pop("username", None)
     return redirect(url_for("login"))
+
+
+@app.errorhandler(InternalServerError)
+def handle_bad_request(e):
+    return (
+        render_template(
+            "500.html",
+            traceback="".join(
+                format_exception(
+                    None,
+                    e.original_exception,
+                    e.original_exception.__traceback__,
+                )
+            ),
+        ),
+        500,
+    )
+
+
+@app.get("/crash-now")
+def crash_now():
+    return f"{4/0}"

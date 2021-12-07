@@ -1,0 +1,12 @@
+{% extends "layout_basic.html" %}
+{% block body %}
+<h1>500 Internal Server Error</h1>
+
+Oh no this should not have happened 😨.<br>
+Please <a href="https://ticket.tust.at/open.php">write a ticket</a> and
+include the traceback below:
+
+<pre><code>
+{{traceback}}
+</code></pre>
+{% endblock %}
