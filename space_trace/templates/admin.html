@@ -15,22 +15,13 @@ This means they start at 00:00 and end at 23:59.
         <label for="endDate" class="form-label">End</label>
         <input type="date" class="form-control" id="endDate" name="endDate" onchange="changeListener()">
     </div>
-    <div class="col-12">
-        <span class="text-danger" id="error"></span>
+    <div class="col-12 text-danger" id="error" hidden>
     </div>
-
     <div class="col-12">
         <button class="btn btn-primary" id="export" disabled onclick="">Export CSV</button>
     </div>
 </form>
 </p>
-
-<p>
-<h3 class="mt-5">Smart contact export</h3>
-Person-based export will come soon 😉
-</p>
-
-
 
 <script>
     const startEl = document.getElementById("startDate");
@@ -40,20 +31,64 @@ Person-based export will come soon 😉
 
     function changeListener() {
         if (startEl.valueAsDate == null || endEl.valueAsDate == null) {
+            errorEl.hidden = true;
             exportEl.disabled = true;
             return;
         }
 
         if (startEl.valueAsDate > endEl.valueAsDate) {
             errorEl.innerText = "The end date must be after the start date.";
+            errorEl.hidden = false;
             exportEl.disabled = true;
             return;
         }
 
         errorEl.innerText = "";
+        errorEl.hidden = true;
         exportEl.disabled = false;
     }
 </script>
+
+<p>
+<h3 class="mt-5">Smart contact export</h3>
+<form action="{{url_for('smart_contacts_csv')}}" method="get" class="row g-3 mt-2">
+    <div class="col-md-4">
+        <label for="smartEndDate" class="form-label">Start</label>
+        <input type="date" class="form-control" id="smartStartDate" name="startDate" onchange="smartChangeListener()">
+    </div>
+    <div class="col-md-8">
+        <label for="infectedId" class="form-label">Infected Person</label>
+        <select id="infectedId" name="infectedId" class="form-select" aria-label="Default select example"
+            onchange="smartChangeListener()">
+            <option value="" selected>Open this select menu</option>
+            {% for user in users%}
+            <option value="{{user.id}}">{{user.email}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div class="col-12">
+        <button class=" btn btn-primary" id="smartExport" disabled onclick="">Export CSV</button>
+    </div>
+</form>
+</p>
+
+<script>
+    const infectedEl = document.getElementById("infectedId");
+    const smartStartEl = document.getElementById("smartStartDate");
+    const smartExportEl = document.getElementById("smartExport");
+
+    function smartChangeListener() {
+        if (infectedEl.value == "" || smartStartEl.valueAsDate == null) {
+            smartExportEl.disabled = true;
+            return;
+        }
+        smartExportEl.disabled = false;
+    }
+</script>
+
+
 
 <h3>Check ins per hour</h3>
 See when people check in.

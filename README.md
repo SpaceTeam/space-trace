@@ -95,7 +95,7 @@ sudo systemctl restart space-trace.service
 ### Final Release
 
 - [x] Dark Mode
-- [ ] Smart export (by selecting infected member not dates)
+- [x] Smart export (by selecting infected member not dates)
 - [ ] public & private APIs so other services can integrate
 - [ ] Tests and CI Pipeline to check on every commit
 - [ ] statically type all function and add mypy to CI

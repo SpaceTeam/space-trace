@@ -42,6 +42,7 @@ def require_login(f):
 
         user = User.query.filter(User.email == session["username"]).first()
         if user is None:
+            session.pop("username", None)
             return redirect(url_for("login"))
 
         flask.g.user = user
@@ -207,6 +208,9 @@ def delete_cert():
 @app.get("/admin")
 @require_admin
 def admin():
+    users = User.query.all()
+    users.sort(key=lambda u: u.email)
+
     q = db.session.query(
         db.func.strftime("%H", Visit.timestamp), db.func.count(Visit.id)
     ).group_by(db.func.strftime("%H", Visit.timestamp))
@@ -219,11 +223,13 @@ def admin():
     return render_template(
         "admin.html",
         user=flask.g.user,
+        users=users,
         checkin_per_hour=checkin_per_hour,
         now=datetime.now(),
     )
 
 
+# TODO: this should be a subroute of admin
 @app.get("/contacts.csv")
 @require_admin
 def contacts_csv():
@@ -250,6 +256,61 @@ def contacts_csv():
         .filter(db.and_(Visit.timestamp > start, Visit.timestamp < end))
         .all()
     )
+
+    if len(users) == 0:
+        flash("No members were in the HQ at that time 👍", "success")
+        return redirect("admin")
+
+    # Convert the mails to names
+    names = []
+    for user in users:
+        first, last = user.email.split("@")[0].split(".")
+        names.append((first, last))
+
+    # Convert to a csv
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(["first name", "last name"])
+
+    for name in names:
+        cw.writerow(name)
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+    # TODO: this should be a subroute of admin
+
+
+@app.get("/smart-contacts.csv")
+@require_admin
+def smart_contacts_csv():
+    format = "%Y-%m-%d"
+    start = datetime.strptime(request.args.get("startDate"), format)
+    infected_id = int(request.args.get("infectedId"))
+
+    # This may look weired but we need to do a bit of arithmetic with both
+    # timestamps. At the moment both timestamps point to the
+    # start of the day (0:00) but end should point to the last minute so if
+    # both point to the same day one whole day gets selected.
+    # Actually start should point to 12h before that because members that only
+    # logged in 12h bevore are still considered as in the HQ.
+    start = start - timedelta(hours=12)
+
+    # Get all email adresses of people logged in that time period
+    visit1: User = db.aliased(Visit)
+    visit2: User = db.aliased(Visit)
+    query = (
+        db.session.query(User)
+        .filter(visit1.user == infected_id)
+        .filter(visit1.timestamp > start)
+        .filter(visit2.timestamp > db.func.date(visit1.timestamp, "-12 hours"))
+        .filter(visit2.timestamp < db.func.date(visit1.timestamp, "+12 hours"))
+        .filter(User.id == visit2.user)
+        .filter(User.id != infected_id)
+    )
+    users = query.all()
 
     if len(users) == 0:
         flash("No members were in the HQ at that time 👍", "success")
