@@ -214,7 +214,7 @@ def admin():
     q = db.session.query(
         db.func.strftime("%H", Visit.timestamp), db.func.count(Visit.id)
     ).group_by(db.func.strftime("%H", Visit.timestamp))
-    checkin_per_hour = {}
+    checkin_per_hour = dict()
     checkin_per_hour["labels"] = [f"{i:02d}" for i in range(24)]
     checkin_per_hour["data"] = [0 for i in range(24)]
     for row in q:
@@ -261,6 +261,7 @@ def contacts_csv():
         flash("No members were in the HQ at that time 👍", "success")
         return redirect("admin")
 
+    # TODO: the convertion from User to csv should be its own function
     # Convert the mails to names
     names = []
     for user in users:
@@ -298,7 +299,7 @@ def smart_contacts_csv():
     # logged in 12h bevore are still considered as in the HQ.
     start = start - timedelta(hours=12)
 
-    # Get all email adresses of people logged in that time period
+    # Get all contacts of the infected
     visit1: User = db.aliased(Visit)
     visit2: User = db.aliased(Visit)
     query = (

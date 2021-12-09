@@ -62,7 +62,7 @@ This means they start at 00:00 and end at 23:59.
             onchange="smartChangeListener()">
             <option value="" selected>Open this select menu</option>
             {% for user in users%}
-            <option value="{{user.id}}">{{user.email}}</option>
+            <option value="{{user.id}}">{{user.get_full_name()}}</option>
             {% endfor %}
         </select>
     </div>
@@ -98,7 +98,8 @@ See when people check in.
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
-
+    // TODO: Oh boy this is definitly one of the more ugly code parts I have 
+    // ever  written
     const labels = [
         {% for item in checkin_per_hour['labels'] %}
     '{{item}}',
@@ -108,9 +109,10 @@ See when people check in.
     const data = {
         labels: labels,
         datasets: [{
-            label: 'Check ins per hour',
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
+            label: 'Check ins',
+            backgroundColor: '#2da44e',
+            borderColor: '#2da44e',
+            cubicInterpolationMode: 'monotone',
             data: [
                 {% for item in checkin_per_hour['data'] %}
     {{ item }},

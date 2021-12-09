@@ -19,6 +19,10 @@ class User(db.Model):
         self.name = name
         self.email = email
 
+    def get_full_name(self) -> str:
+        first, last = self.email.split("@")[0].split(".")
+        return f"{first.capitalize()} {last.capitalize()}"
+
     def __repr__(self):
         return f"<User id={self.id}, name={self.name}, email={self.email}>"
 
