@@ -1,4 +1,5 @@
 import os
+from typing import Any
 from PIL import Image
 import base45
 import zlib
@@ -21,7 +22,13 @@ from space_trace.models import User
 COVID_19_ID = "840539006"
 
 
-def calc_vacinated_till(data) -> date:
+def calc_vaccinated_till(data: Any) -> date:
+    """
+    Processes a cose document and returns the date it will expire.
+
+    Raises an exception if this is not the last shot or if the certificate is
+    already expired.
+    """
     hcert = data[-260][1]["v"][0]
     vaccination_date = date.fromisoformat(hcert["dt"])
     valid_until = None
@@ -55,6 +62,8 @@ def canonicalize_name(name: str) -> str:
 
 
 def assert_cert_belong_to(cert_data: any, user: User):
+    """Raises an exception if the certificate doesn't belong to the user"""
+
     # Parse the users name form the email
     [first_name, last_name] = user.email.split("@")[0].split(".")
     first_name = canonicalize_name(first_name)
@@ -181,7 +190,7 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     assert_cert_belong_to(data, user)
 
     # Verify that this vaccination is newer than the last one
-    vaccinated_till = calc_vacinated_till(data)
+    vaccinated_till = calc_vaccinated_till(data)
     if user.vaccinated_till is not None:
         if user.vaccinated_till > vaccinated_till:
             raise Exception("You already uploaded a newer certificate")

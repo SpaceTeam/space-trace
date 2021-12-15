@@ -311,6 +311,7 @@ def smart_contacts_csv():
         .filter(User.id == visit2.user)
         .filter(User.id != infected_id)
     )
+    print(query)
     users = query.all()
 
     if len(users) == 0:

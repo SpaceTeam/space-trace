@@ -12,4 +12,4 @@ def create_table():
     db.create_all()
 
 
-from space_trace import routes
+from space_trace import views

@@ -72,6 +72,7 @@ sudo systemctl restart space-trace.service
 
 - Use [`black`](https://github.com/psf/black) to format code
 - Try to follow the python style guide [PEP 8](https://www.python.org/dev/peps/pep-0008/)
+- Run all tests before committing with: `python3 -m pytest`
 
 ## Roadmap
 
