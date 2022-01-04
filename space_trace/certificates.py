@@ -198,8 +198,4 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
             raise Exception("You already uploaded this certificate")
 
     # Update the user
-    db.session.query(User).filter(User.id == user.id).update(
-        {"vaccinated_till": vaccinated_till}
-    )
-    user = User.query.filter(User.id == user.id).first()
-    db.session.commit()
+    user.vaccinated_till = vaccinated_till

@@ -55,7 +55,7 @@ def require_admin(f):
     @wraps(f)
     @require_login
     def wrapper(*args, **kwargs):
-        if flask.g.user.email not in app.config["ADMINS"]:
+        if not flask.g.user.is_admin():
             flash("You are not an admin, what were you thinking?", "danger")
             return redirect(url_for("home"))
 
@@ -68,7 +68,7 @@ def require_vaccinated(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         user = flask.g.user
-        if user.vaccinated_till is None or user.vaccinated_till < date.today():
+        if not user.is_vaccinated():
             flash("You need to upload a vaccination certificate.", "info")
             return redirect(url_for("cert"))
 
@@ -145,13 +145,7 @@ def add_visit():
 @require_login
 def cert():
     user: User = flask.g.user
-
-    is_vaccinated = (
-        user.vaccinated_till is not None
-        and user.vaccinated_till > date.today()
-    )
-
-    return render_template("cert.html", user=user, is_vaccinated=is_vaccinated)
+    return render_template("cert.html", user=user)
 
 
 @app.post("/cert")
@@ -168,9 +162,17 @@ def upload_cert():
 
     try:
         detect_and_attach_cert(file, user)
+
+        db.session.query(User).filter(User.id == user.id).update(
+            {"vaccinated_till": user.vaccinated_till}
+        )
+        user = User.query.filter(User.id == user.id).first()
+        db.session.commit()
+
     except IntegrityError:
         flash("This certificate was already uploaded", "warning")
         return redirect(request.url)
+
     except Exception as e:
         if hasattr(e, "message"):
             message = e.message

@@ -31,12 +31,11 @@ You can only upload images of QR codes or PDFs.
     }
 </script>
 
-{% if is_vaccinated %}
+{% if user.is_vaccinated() %}
 <h5>Your vaccination status is valid till {{user.vaccinated_till}}.</h5>
 <form action="{{url_for('delete_cert')}}" method="post">
     <button class="btn btn-outline-danger">Delete</button>
 </form>
 {% endif %}
-
 
 {% endblock %}
