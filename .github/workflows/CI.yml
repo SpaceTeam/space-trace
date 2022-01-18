@@ -48,4 +48,4 @@ jobs:
         script: |
           cd space-trace
           git pull
-          systemctl restart space-trace
+          sudo systemctl restart space-trace
