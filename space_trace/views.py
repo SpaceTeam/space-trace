@@ -226,8 +226,6 @@ def contacts_csv():
     output.headers["Content-type"] = "text/csv"
     return output
 
-    # TODO: this should be a subroute of admin
-
 
 @app.get("/admin/smart-contacts.csv")
 @require_admin
@@ -320,6 +318,11 @@ def statistic():
         active_visits=active_visits,
         active_users=active_users,
     )
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
 
 
 @app.errorhandler(InternalServerError)
