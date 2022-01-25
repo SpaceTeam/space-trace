@@ -187,7 +187,7 @@ def contacts_csv():
     end = datetime.strptime(request.args.get("endDate"), format)
     if start > end:
         flash("End date cannot be before start date.", "warning")
-        return redirect("admin")
+        return redirect(url_for("admin"))
 
     # This may look weired but we need to do a bit of arithmetic with both
     # timestamps. At the moment both timestamps point to the
@@ -210,16 +210,13 @@ def contacts_csv():
         flash("No members were in the HQ at that time 👍", "success")
         return redirect("admin")
 
-    # Convert the mails to names
-    names = [(u.first_name(), u.last_name()) for u in users]
-
     # Convert to a csv
     si = StringIO()
     cw = csv.writer(si)
-    cw.writerow(["first name", "last name"])
+    cw.writerow(["first name", "last name", "team"])
 
-    for name in names:
-        cw.writerow(name)
+    for user in users:
+        cw.writerow([user.first_name(), user.last_name(), user.team])
 
     output = make_response(si.getvalue())
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
@@ -258,18 +255,15 @@ def smart_contacts_csv():
 
     if len(users) == 0:
         flash("No members were in the HQ at that time 👍", "success")
-        return redirect("admin")
-
-    # Convert the mails to names
-    names = [(u.first_name(), u.last_name()) for u in users]
+        return redirect(url_for("admin"))
 
     # Convert to a csv
     si = StringIO()
     cw = csv.writer(si)
-    cw.writerow(["first name", "last name"])
+    cw.writerow(["first name", "last name", "team"])
 
-    for name in names:
-        cw.writerow(name)
+    for user in users:
+        cw.writerow([user.first_name(), user.last_name(), user.team])
 
     output = make_response(si.getvalue())
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
@@ -303,13 +297,7 @@ def statistic():
             .all()
         )
 
-        active_users = []
-        for user in users:
-            active_users.append(
-                (user.first_name(), user.last_name(), user.team)
-            )
-
-        active_users = sorted(active_users, key=lambda n: n[0])
+        active_users = sorted(users, key=lambda u: u.email)
 
     return render_template(
         "statistic.html",
