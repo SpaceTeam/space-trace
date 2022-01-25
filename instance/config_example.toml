@@ -3,8 +3,8 @@
 SECRET_KEY="dev"
 
 # Space Team and Racing Team saml config paths
-SAML_ST_PATH="space_trace/saml_st"
-SAML_RT_PATH="space_trace/saml_rt"
+SAML_ST_PATH="instance/saml_st"
+SAML_RT_PATH="instance/saml_rt"
 
 # SQLAlchemy configuration (don't change)
 SQLALCHEMY_DATABASE_URI="sqlite:///../instance/trace.db"

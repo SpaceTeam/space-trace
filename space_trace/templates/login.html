@@ -3,7 +3,10 @@
 <h1>Login</h1>
 You need to login with your Spaceteam Google account to enter the HQ.
 
-<form action="/login" method="post">
-    <button class="btn btn-primary mt-3 w-100" type="submit">Login with Google</button>
+<form action="{{url_for('login_st')}}" method="post">
+    <button class="btn btn-primary mt-3 w-100" type="submit">Space Team Login</button>
+</form>
+<form action="{{url_for('login_rt')}}" method="post">
+    <button class="btn btn-primary mt-3 w-100" type="submit">Racing Team Login</button>
 </form>
 {% endblock %}

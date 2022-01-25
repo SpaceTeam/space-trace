@@ -73,13 +73,6 @@ def require_vaccinated(f):
     return wrapper
 
 
-def init_saml_auth(req):
-    auth = OneLogin_Saml2_Auth(
-        req, custom_base_path=app.config["SAML_ST_PATH"]
-    )
-    return auth
-
-
 def prepare_flask_request(request):
     # If server is behind proxys or balancers use the HTTP_X_FORWARDED fields
     return {
@@ -96,10 +89,12 @@ def login():
     return render_template("login.html")
 
 
-@app.post("/login")
-def add_login():
+@app.post("/login-st")
+def login_st():
     req = prepare_flask_request(request)
-    auth = init_saml_auth(req)
+    auth = OneLogin_Saml2_Auth(
+        req, custom_base_path=app.config["SAML_ST_PATH"]
+    )
 
     return_to = "https://covid.tust.at/"
     sso_built_url = auth.login(return_to)
@@ -107,10 +102,12 @@ def add_login():
     return redirect(sso_built_url)
 
 
-@app.route("/saml", methods=["POST", "GET"])
-def saml_response():
+@app.route("/saml-st", methods=["POST", "GET"])
+def saml_response_st():
     req = prepare_flask_request(request)
-    auth = init_saml_auth(req)
+    auth = OneLogin_Saml2_Auth(
+        req, custom_base_path=app.config["SAML_ST_PATH"]
+    )
     errors = []
 
     request_id = None
@@ -130,7 +127,61 @@ def saml_response():
     user = User.query.filter(User.email == username).first()
     if user is None:
         firstname = username.split(".", 1)[0].capitalize()
-        user = User(firstname, username)
+        user = User(firstname, username, "space")
+        db.session.add(user)
+        db.session.commit()
+
+    session["username"] = username
+    session.permanent = True
+
+    self_url = OneLogin_Saml2_Utils.get_self_url(req)
+    if "RelayState" in request.form and self_url != request.form["RelayState"]:
+        # To avoid 'Open Redirect' attacks, before execute the redirection
+        # confirm the value of the request.form['RelayState'] is a trusted URL.
+        return redirect(auth.redirect_to(request.form["RelayState"]))
+
+    return redirect(url_for("home"))
+
+
+@app.post("/login-rt")
+def login_rt():
+    req = prepare_flask_request(request)
+    auth = OneLogin_Saml2_Auth(
+        req, custom_base_path=app.config["SAML_RT_PATH"]
+    )
+
+    return_to = "https://covid.tust.at/"
+    sso_built_url = auth.login(return_to)
+    session["AuthNRequestID"] = auth.get_last_request_id()
+    return redirect(sso_built_url)
+
+
+@app.route("/saml-rt", methods=["POST", "GET"])
+def saml_response_rt():
+    req = prepare_flask_request(request)
+    auth = OneLogin_Saml2_Auth(
+        req, custom_base_path=app.config["SAML_RT_PATH"]
+    )
+    errors = []
+
+    request_id = None
+    if "AuthNRequestID" in session:
+        request_id = session["AuthNRequestID"]
+
+    auth.process_response(request_id=request_id)
+    errors = auth.get_errors()
+    if len(errors) != 0:
+        flash(f"An error occured during login: {errors}", "danger")
+        return redirect(url_for("login"))
+
+    if "AuthNRequestID" in session:
+        del session["AuthNRequestID"]
+    username = str(auth.get_nameid())
+
+    user = User.query.filter(User.email == username).first()
+    if user is None:
+        firstname = username.split(".", 1)[0].capitalize()
+        user = User(firstname, username, "racing")
         db.session.add(user)
         db.session.commit()
 
