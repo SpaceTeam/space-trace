@@ -232,7 +232,7 @@ def admin():
 
 
 # TODO: this should be a subroute of admin
-@app.get("/contacts.csv")
+@app.get("/admin/contacts.csv")
 @require_admin
 def contacts_csv():
     format = "%Y-%m-%d"
@@ -263,12 +263,8 @@ def contacts_csv():
         flash("No members were in the HQ at that time 👍", "success")
         return redirect("admin")
 
-    # TODO: the convertion from User to csv should be its own function
     # Convert the mails to names
-    names = []
-    for user in users:
-        first, last = user.email.split("@")[0].split(".")
-        names.append((first, last))
+    names = [(u.first_name(), u.last_name()) for u in users]
 
     # Convert to a csv
     si = StringIO()
@@ -304,7 +300,7 @@ def smart_contacts_csv():
     # Get all contacts of the infected
     visit1: User = db.aliased(Visit)
     visit2: User = db.aliased(Visit)
-    query = (
+    users = (
         db.session.query(User)
         .filter(visit1.user == infected_id)
         .filter(visit1.timestamp > start)
@@ -312,19 +308,15 @@ def smart_contacts_csv():
         .filter(visit2.timestamp < db.func.date(visit1.timestamp, "+12 hours"))
         .filter(User.id == visit2.user)
         .filter(User.id != infected_id)
+        .all()
     )
-    print(query)
-    users = query.all()
 
     if len(users) == 0:
         flash("No members were in the HQ at that time 👍", "success")
         return redirect("admin")
 
     # Convert the mails to names
-    names = []
-    for user in users:
-        first, last = user.email.split("@")[0].split(".")
-        names.append((first, last))
+    names = [(u.first_name(), u.last_name()) for u in users]
 
     # Convert to a csv
     si = StringIO()

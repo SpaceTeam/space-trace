@@ -22,6 +22,18 @@ class User(db.Model):
     def is_admin(self) -> bool:
         return self.email in app.config["ADMINS"]
 
+    def first_name(self) -> str:
+        first, _ = self.email.split("@")[0].split(".")
+        first = first.capitalize()
+        first = "-".join(map(lambda n: n[0].upper() + n[1:], first.split("-")))
+        return first
+
+    def last_name(self) -> str:
+        _, last = self.email.split("@")[0].split(".")
+        last = last.capitalize()
+        last = "-".join(map(lambda n: n[0].upper() + n[1:], last.split("-")))
+        return last
+
     def full_name(self) -> str:
         first, last = self.email.split("@")[0].split(".")
         name = first.capitalize() + " " + last.capitalize()
