@@ -98,26 +98,15 @@ See when people check in.
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
-    // TODO: Oh boy this is definitly one of the more ugly code parts I have 
-    // ever  written
-    const labels = [
-        {% for item in checkin_per_hour['labels'] %}
-    '{{item}}',
-        {% endfor %}
-    ];
-
+    const checkins = {{ checkin_per_hour| tojson }};
     const data = {
-        labels: labels,
+        labels: checkins["labels"],
         datasets: [{
             label: 'Check ins',
             backgroundColor: '#2da44e',
             borderColor: '#2da44e',
             cubicInterpolationMode: 'monotone',
-            data: [
-                {% for item in checkin_per_hour['data'] %}
-    {{ item }},
-        {% endfor %}
-            ],
+            data: checkins["data"]
         }]
     };
 
