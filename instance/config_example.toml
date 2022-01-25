@@ -2,8 +2,11 @@
 # python3 -c 'import secrets; print(secrets.token_hex())'
 SECRET_KEY="dev"
 
-# Some SAML and SQLAlchemy configuration (don't change)
-SAML_PATH="space_trace/saml"
+# Space Team and Racing Team saml config paths
+SAML_ST_PATH="space_trace/saml_st"
+SAML_RT_PATH="space_trace/saml_rt"
+
+# SQLAlchemy configuration (don't change)
 SQLALCHEMY_DATABASE_URI="sqlite:///../instance/trace.db"
 SQLALCHEMY_TRACK_MODIFICATIONS=false
 

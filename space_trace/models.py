@@ -8,6 +8,8 @@ class User(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.Text, nullable=False)
     email: str = db.Column(db.Text, unique=True, nullable=False)
+    # Either 'space' or 'racing' to specify which team the user belongs to
+    team: str = db.Column(db.Text, nullable=False)
     created_at: datetime = db.Column(
         db.DateTime, nullable=False, default=db.func.now()
     )
@@ -15,9 +17,10 @@ class User(db.Model):
 
     __table_args__ = (db.Index("idx_users_email", email),)
 
-    def __init__(self, name: str, email: str):
+    def __init__(self, name: str, email: str, team: str):
         self.name = name
         self.email = email
+        self.team = team
 
     def is_admin(self) -> bool:
         return self.email in app.config["ADMINS"]

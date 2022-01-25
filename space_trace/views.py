@@ -305,8 +305,9 @@ def statistic():
 
         active_users = []
         for user in users:
-            first, last = user.full_name().split(" ")
-            active_users.append((first, last))
+            active_users.append(
+                (user.first_name(), user.last_name(), user.team)
+            )
 
         active_users = sorted(active_users, key=lambda n: n[0])
 

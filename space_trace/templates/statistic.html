@@ -17,16 +17,18 @@
             <td>#</td>
             <td>First Name</td>
             <td>Last Name</td>
+            <td>Team</td>
         </tr>
     </thead>
     <tbody>
-        {% for first, last in active_users -%}
+        {% for first, last, team in active_users -%}
         <tr>
             <td>
                 {{loop.index}}
             </td>
             <td>{{first}}</td>
             <td>{{last}}</td>
+            <td>{{team}}</td>
         </tr>
         {% endfor %}
     </tbody>

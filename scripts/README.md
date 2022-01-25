@@ -30,3 +30,8 @@ $
 
 This sql statement decrements the expiration dates of all vaccines in case
 the goverment changes those dates.
+
+## migrate_multiteam.sql
+
+On 25th Jan 2022 we migrated from only supporing the Space Team to also support the
+Racing Team this needs a couple of db schema changes.

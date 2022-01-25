@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN team TEXT NOT NULL DEFAULT 'space';
