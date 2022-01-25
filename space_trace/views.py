@@ -4,7 +4,7 @@ from traceback import format_exception
 import csv
 
 import flask
-from flask import redirect, url_for, request, flash
+from flask import redirect, send_file, url_for, request, flash
 from flask.helpers import make_response
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
@@ -329,6 +329,11 @@ def handle_bad_request(e):
         ),
         500,
     )
+
+
+@app.get("/goots")
+def goots():
+    return send_file("static/goots.png")
 
 
 @app.get("/crash-now")
