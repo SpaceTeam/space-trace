@@ -41,6 +41,11 @@ python3 -m venv venv
 Copy `instance/config_example.toml` to `instance/config.toml` and edit all
 the fields in it.
 
+Clone `instance/saml_example` into `instance/saml_st` and `instance/saml_rt`
+and fill out your SAML configuration. For saml we use the python library
+[python3-saml](https://github.com/onelogin/python3-saml) and documentation to
+setup SAML can be found [here](https://github.com/onelogin/python3-saml#how-it-works).
+
 Open `space-trace.service` and edit the username and all paths to the working
 directory.
 
