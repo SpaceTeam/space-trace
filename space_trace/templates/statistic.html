@@ -6,29 +6,55 @@
     checked in <strong>{{total_visits}}</strong> times.
 </p>
 
-<h3>Currently in the HQ ({{active_visits}})</h3>
-{% if user is none %}
+<h2>Currently in the HQ ({{active_visits}})</h2>
+{% if users is none %}
 🔒 <i>Only logged in users can see the names.</i>
 {% else %}
-{% if active_users|length > 0%}
+
+<h3>Space Team</h3>
+{% if active_users_st|length > 0%}
 <table class="table">
     <thead>
         <tr>
             <td>#</td>
             <td>First Name</td>
             <td>Last Name</td>
-            <td>Team</td>
         </tr>
     </thead>
     <tbody>
-        {% for user in active_users -%}
+        {% for user in active_users_st %}
         <tr>
             <td>
                 {{loop.index}}
             </td>
             <td>{{user.first_name()}}</td>
             <td>{{user.last_name()}}</td>
-            <td>{{user.team}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{%else%}
+<i>There is nobody to see.</i>
+{% endif %}
+
+<h3>Racing Team</h3>
+{% if active_users_rt|length > 0%}
+<table class="table">
+    <thead>
+        <tr>
+            <td>#</td>
+            <td>First Name</td>
+            <td>Last Name</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in active_users_rt %}
+        <tr>
+            <td>
+                {{loop.index}}
+            </td>
+            <td>{{user.first_name()}}</td>
+            <td>{{user.last_name()}}</td>
         </tr>
         {% endfor %}
     </tbody>

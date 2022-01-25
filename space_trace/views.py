@@ -288,7 +288,8 @@ def statistic():
         Visit.timestamp > cutoff_timestamp
     ).count()
 
-    active_users = None
+    active_users_st = None
+    active_users_rt = None
     if flask.g.user is not None:
         users = (
             db.session.query(User)
@@ -297,7 +298,9 @@ def statistic():
             .all()
         )
 
-        active_users = sorted(users, key=lambda u: u.email)
+        users = sorted(users, key=lambda u: u.email)
+        active_users_st = list(filter(lambda u: u.team == "space", users))
+        active_users_rt = list(filter(lambda u: u.team == "racing", users))
 
     return render_template(
         "statistic.html",
@@ -305,7 +308,8 @@ def statistic():
         total_users=total_users,
         total_visits=total_visits,
         active_visits=active_visits,
-        active_users=active_users,
+        active_users_st=active_users_st,
+        active_users_rt=active_users_rt,
     )
 
 
