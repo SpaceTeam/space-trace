@@ -64,6 +64,9 @@ interface, and if you want to test certificate upload the email must be in the
 format: `<firstname>.<lastname>@<anydomain>` because the service will verify
 with the email that the certificate belongs to the user that uploaded it.
 
+In the development environment the templates are hot reloadable, as is the
+python backend, however editing `config.toml` requires a restart.
+
 ## Development
 
 - Use [`black`](https://github.com/psf/black) to format code
