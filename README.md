@@ -5,11 +5,11 @@ Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 
 ## Getting started
 
-You can either set up the environment yourself or use the VSCode Docker environment. Some dependencies, such as zbar, are platform-specific and therefore cause potential installation issues (e.g. on Windows and Mac M1 Apple Silicon). With the Docker VSCode setup, you should not encounter such issues.
+You can either set up the environment yourself or use the VSCode Docker environment. Some dependencies, such as `zbar`, are platform-specific and therefore cause potential installation issues (e.g. on Windows and Mac M1 Apple Silicon). With the Docker VSCode setup, you should not encounter such issues.
 
-#### Without Docker
+### Without Docker
 
-Install Python3.8 (or higher), zbar, popper, libxml2
+Install Python3.8 (or higher), `zbar`, `popper`, `libxml2`
 
 Install all dependencies with:
 
@@ -23,11 +23,10 @@ flask run
 
 This launces a simple webserver which can only be accessed from the localhost.
 
-**Note:** Don't use this server in production, it is insecure and low
-performance.
+**Note:** Don't use this server in production, it is insecure and low performance.
 
 
-#### With Docker and VSCode
+### With Docker and VSCode
 
 The project has a VSCode remote container development environment, so you don't have to deal with platform-specific program installations.
 
