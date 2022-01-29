@@ -20,4 +20,5 @@ RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requ
     && rm -rf /tmp/pip-tmp
 
 # export flask app env variable
+ENV FLASK_ENV=development
 ENV FLASK_APP=space_trace
