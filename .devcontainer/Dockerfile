@@ -1,7 +1,7 @@
 # Space Trace - VSCode DevContainer 
 
 # Run with following commands:
-# 1. Install VSCode Docker extension
+# 1. Install the VSCode Remote-Containers extension
 # 2. CMD + SHIFT + P
 # 3. Remote-Containers: Rebuild and Reopen in Container
 
