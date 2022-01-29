@@ -31,3 +31,6 @@ DISAPPOINTED_USERS=["silvia.tirler@spaceteam.at"]
 # the email is important as the name in the certificate must be matched to 
 # your email.
 DEBUG_EMAIL="Robert.Nystrom@email.com"
+
+# This is just the team the debug user is in. (Eiter 'space' or 'racing')
+DEBUG_TEAM="space"

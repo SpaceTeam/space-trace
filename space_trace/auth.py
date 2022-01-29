@@ -203,10 +203,11 @@ def login_debug():
         abort(404)
 
     email = app.config["DEBUG_EMAIL"]
+    team = app.config["DEBUG_TEAM"]
     firstname = "Testuser"
     session["username"] = email
     try:
-        user = User(firstname, email)
+        user = User(firstname, email, team)
         db.session.add(user)
         db.session.commit()
     except Exception:
