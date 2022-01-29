@@ -3,23 +3,37 @@
 Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
 ![Screenshot](https://user-images.githubusercontent.com/21206831/144690589-8ba45b74-cd64-4dd8-8796-748f5ea0fa78.png)
 
+## Features
+
+- Login with Space Team Google account (SAML).
+- Decode and verify [EU Digital COVID Certificates](https://en.wikipedia.org/wiki/EU_Digital_COVID_Certificate)
+- Upload certificates as PDF or Image.
+- Export contacts in day range
+- Smart Export by defining time range and person.
+
 ## Getting started
 
 You can either set up the environment yourself or use the VSCode Docker environment. Some dependencies, such as `zbar`, are platform-specific and therefore cause potential installation issues (e.g. on Windows and Mac M1 Apple Silicon). With the Docker VSCode setup, you should not encounter such issues.
 
 ### Without Docker
 
-Install Python3.8 (or higher), `zbar`, `popper`, `libxml2`
+1. Install Python3.8 (or higher), `zbar`, `popper`, `libxml2`
+2. Install all dependencies with:
 
-Install all dependencies with:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-export FLASK_APP=space_trace FLASK_ENV=development
-flask run
-```
+3. Setup the config by copying `instance/config_example.toml` to
+   `instance/config.toml` and editing the new config
+   (the comments in the file will guide you).
+4. Start the server with:
+   ```
+   export FLASK_APP=space_trace FLASK_ENV=development
+   flask run
+   ```
 
 This launces a simple webserver which can only be accessed from the localhost.
 
@@ -31,9 +45,30 @@ The project has a VSCode remote container development environment, so you don't 
 
 1. Open this project in VSCode
 2. Install the [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
-3. Press `CMD + SHIFT + P`(macOS) or `CTRL + SHIFT + P`(Linux & Windows)
+3. Press `CMD + SHIFT + P` (macOS) or `CTRL + SHIFT + P` (Linux & Windows)
 4. Run `Remote-Containers: Rebuild and Reopen in Container`
-5. Run `flask run` in container
+5. Setup the config by copying `instance/config_example.toml` to
+   `instance/config.toml` and editing the new config
+   (the comments in the file will guide you).
+6. Run `flask run` in container
+
+### Notes on the development environment
+
+The login does not work in the development environment as SAML would redirect
+to the production service. To work around this limitation you can can visit
+`/login-debug` which will log you in as the user defined by the `DEBUG_EMAIL`
+key in the `config.toml`. However this, only works when `FLASK_ENV=development`.
+
+Be sure to also add that email to the `ADMINS` list if you want to test the admin
+interface, and if you want to test certificate upload the email must be in the
+format: `<firstname>.<lastname>@<anydomain>` because the service will verify
+with the email that the certificate belongs to the user that uploaded it.
+
+## Development
+
+- Use [`black`](https://github.com/psf/black) to format code
+- Try to follow the python style guide [PEP 8](https://www.python.org/dev/peps/pep-0008/)
+- Run all tests before committing with: `python3 -m pytest`
 
 ## Deployment
 
@@ -85,40 +120,6 @@ To update the service to a new version (commit) run:
 git pull
 sudo systemctl restart space-trace.service
 ```
-
-## Development
-
-- Use [`black`](https://github.com/psf/black) to format code
-- Try to follow the python style guide [PEP 8](https://www.python.org/dev/peps/pep-0008/)
-- Run all tests before committing with: `python3 -m pytest`
-
-## Roadmap
-
-### Alpha 1
-
-- [x] Decode a EU Certificate
-
-### Alpha 2
-
-- [x] Login with SAML
-- [x] Upload Picture of QR Code (no verification)
-- [x] Register for a day
-- [x] Export contacts on day basis
-
-### Beta
-
-- [x] Allow PDF upload
-- [x] Verify Certificates
-- [x] Admin interface
-
-### Final Release
-
-- [x] Dark Mode
-- [x] Smart export (by selecting infected member not dates)
-- [ ] public & private APIs so other services can integrate
-- [ ] Tests and CI Pipeline to check on every commit
-- [ ] statically type all function and add mypy to CI
-- [ ] Continous Delivery (gitops?)
 
 ## Resources
 
