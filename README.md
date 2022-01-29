@@ -25,14 +25,13 @@ This launces a simple webserver which can only be accessed from the localhost.
 
 **Note:** Don't use this server in production, it is insecure and low performance.
 
-
 ### With Docker and VSCode
 
 The project has a VSCode remote container development environment, so you don't have to deal with platform-specific program installations.
 
 1. Open this project in VSCode
 2. Install the [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
-3. Press `CMD + SHIFT + P`
+3. Press `CMD + SHIFT + P`(macOS) or `CTRL + SHIFT + P`(Linux & Windows)
 4. Run `Remote-Containers: Rebuild and Reopen in Container`
 5. Run `flask run` in container
 
