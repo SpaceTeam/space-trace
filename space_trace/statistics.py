@@ -1,3 +1,4 @@
+from typing import List
 from space_trace.models import User, Visit
 import flask
 from space_trace import db
@@ -19,7 +20,7 @@ def active_visits() -> int:
     ).count()
 
 
-def active_users(team: str = None) -> list[User]:
+def active_users(team: str = None) -> List[User]:
     if flask.g.user is None:
         return None
 
