@@ -24,6 +24,8 @@ from space_trace.certificates import (
 from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
 
+from space_trace.statistics import *
+
 
 def get_active_visit(user: User) -> Visit:
     # A visit that is less than 12h old
@@ -280,36 +282,14 @@ def help():
 @app.get("/statistic")
 @maybe_load_user
 def statistic():
-    total_users = User.query.count()
-    total_visits = Visit.query.count()
-
-    cutoff_timestamp = datetime.now() - timedelta(hours=12)
-    active_visits = Visit.query.filter(
-        Visit.timestamp > cutoff_timestamp
-    ).count()
-
-    active_users_st = None
-    active_users_rt = None
-    if flask.g.user is not None:
-        users = (
-            db.session.query(User)
-            .filter(User.id == Visit.user)
-            .filter(Visit.timestamp > cutoff_timestamp)
-            .all()
-        )
-
-        users = sorted(users, key=lambda u: u.email)
-        active_users_st = list(filter(lambda u: u.team == "space", users))
-        active_users_rt = list(filter(lambda u: u.team == "racing", users))
-
     return render_template(
         "statistic.html",
         user=flask.g.user,
-        total_users=total_users,
-        total_visits=total_visits,
-        active_visits=active_visits,
-        active_users_st=active_users_st,
-        active_users_rt=active_users_rt,
+        total_users=total_users(),
+        total_visits=total_visits(),
+        active_visits=active_visits(),
+        active_users_st=active_users(team='space'),
+        active_users_rt=active_users(team='racing'),
     )
 
 
