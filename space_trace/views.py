@@ -57,7 +57,7 @@ def home():
         color = "warning" if expires_in > timedelta(days=7) else "danger"
         flash(
             "Your vaccination certificate will expire "
-            f"in {expires_in.days} days.",
+            f"in {expires_in.days} day(s).",
             color,
         )
 
@@ -130,7 +130,7 @@ def upload_cert():
         return redirect(request.url)
 
     flash(
-        "Successfully uploaded certificate "
+        "Successfully uploaded a certificate "
         f"which is valid till {user.vaccinated_till}",
         "success",
     )
