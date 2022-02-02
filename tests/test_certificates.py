@@ -25,12 +25,12 @@ def test_calc_vaccinated_till_with_active_cert():
                     {
                         "ci": "URN:UVCI:01:AT:10807843F94AEE0EE5093FBC254BD813#B",
                         "co": "AT",
-                        "dn": 2,
+                        "dn": 3,
                         "dt": date.today().isoformat(),
                         "is": "Ministry of Health, Austria",
                         "ma": "ORG-100030215",
                         "mp": "EU/1/20/1528",
-                        "sd": 2,
+                        "sd": 3,
                         "tg": "840539006",
                         "vp": "1119349007",
                     }
@@ -62,12 +62,12 @@ def test_calc_vaccinated_till_with_expired_cert():
                     {
                         "ci": "URN:UVCI:01:AT:10807843F94AEE0EE5093FBC254BD813#B",
                         "co": "AT",
-                        "dn": 2,
+                        "dn": 3,
                         "dt": (date.today() - timedelta(days=365)).isoformat(),
                         "is": "Ministry of Health, Austria",
                         "ma": "ORG-100030215",
                         "mp": "EU/1/20/1528",
-                        "sd": 2,
+                        "sd": 3,
                         "tg": "840539006",
                         "vp": "1119349007",
                     }
