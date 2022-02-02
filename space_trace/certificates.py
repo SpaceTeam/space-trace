@@ -34,15 +34,12 @@ def calc_vaccinated_till(data: Any) -> date:
     valid_until = None
 
     # Check if it is the last dosis
-    if hcert["dn"] != hcert["sd"]:
+    if hcert["dn"] != hcert["sd"] or hcert["sd"] == 1:
         raise Exception("With this certificate you are not fully immunized.")
 
-    # Check if it is johnson then its only 270 days or till first of 2022
-    if hcert["sd"] == 1:
-        valid_until = min(
-            vaccination_date + timedelta(days=270),
-            date(2022, 1, 3),
-        )
+    # First set of vaccinations is 180 valid
+    elif hcert["sd"] == 2:
+        valid_until = vaccination_date + timedelta(days=180)
 
     # Otherwise it is 270 days
     else:
@@ -120,8 +117,7 @@ def assert_cert_sign(cose_data: bytes):
             break
     else:
         raise Exception(
-            "Unable validate certificate signature: "
-            f"kid '{required_kid}' not found"
+            "Unable validate certificate signature: " f"kid '{required_kid}' not found"
         )
     found_cert = cert
 
