@@ -15,9 +15,7 @@ def total_visits() -> int:
 
 def active_visits() -> int:
     cutoff_timestamp = datetime.now() - timedelta(hours=12)
-    return Visit.query.filter(
-        Visit.timestamp > cutoff_timestamp
-    ).count()
+    return Visit.query.filter(Visit.timestamp > cutoff_timestamp).count()
 
 
 def active_users(team: str = None) -> List[User]:

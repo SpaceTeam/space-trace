@@ -23,8 +23,12 @@ from space_trace.certificates import (
 )
 from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
-
-from space_trace.statistics import *
+from space_trace.statistics import (
+    active_users,
+    active_visits,
+    total_users,
+    total_visits,
+)
 
 
 def get_active_visit(user: User) -> Visit:
@@ -58,8 +62,7 @@ def home():
     if expires_in < timedelta(days=21):
         color = "warning" if expires_in > timedelta(days=7) else "danger"
         flash(
-            "Your vaccination certificate will expire "
-            f"in {expires_in.days} day(s).",
+            "Your vaccination certificate will expire " f"in {expires_in.days} day(s).",
             color,
         )
 
@@ -148,9 +151,7 @@ def delete_cert():
         flash("You don't have a certificate to delete", "danger")
         return redirect(url_for("cert"))
 
-    db.session.query(User).filter(User.id == user.id).update(
-        {"vaccinated_till": None}
-    )
+    db.session.query(User).filter(User.id == user.id).update({"vaccinated_till": None})
     db.session.commit()
 
     flash("Successfully deleted your certificate", "success")
@@ -288,8 +289,8 @@ def statistic():
         total_users=total_users(),
         total_visits=total_visits(),
         active_visits=active_visits(),
-        active_users_st=active_users(team='space'),
-        active_users_rt=active_users(team='racing'),
+        active_users_st=active_users(team="space"),
+        active_users_rt=active_users(team="racing"),
     )
 
 

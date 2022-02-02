@@ -16,13 +16,11 @@ _jokes = [
     "By pressing this button you also agree that you voluntarily give up your "
     "right to a dark theme.",
     "#FFFFFF, yes exactly and there is more of that if you enter.",
-    "You may be unatractive, stupid and socially awkward but you also smell "
-    "bad.",
+    "You may be unatractive, stupid and socially awkward but you also smell " "bad.",
     "Clicking buttons is fun. Go fetch yourself a remote and press those "
     "buttons instead. (They are way more satisfyable to press anyway).",
     "FIRE! ... with such a huge erection I wouldn't enter HQ either.",
-    "Explosions are fun, and my fun-levels always explode when you're far "
-    "away.",
+    "Explosions are fun, and my fun-levels always explode when you're far " "away.",
     "Oh no the button is broken. But no worries a team of very active sloths "
     "is working on it. So there is really no point in pressing it. Come back "
     "tomorrow and see if it is fixed.",

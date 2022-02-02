@@ -92,9 +92,7 @@ def login():
 @app.post("/login-st")
 def login_st():
     req = prepare_flask_request(request)
-    auth = OneLogin_Saml2_Auth(
-        req, custom_base_path=app.config["SAML_ST_PATH"]
-    )
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_ST_PATH"])
 
     return_to = "https://covid.tust.at/"
     sso_built_url = auth.login(return_to)
@@ -105,9 +103,7 @@ def login_st():
 @app.route("/saml-st", methods=["POST", "GET"])
 def saml_response_st():
     req = prepare_flask_request(request)
-    auth = OneLogin_Saml2_Auth(
-        req, custom_base_path=app.config["SAML_ST_PATH"]
-    )
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_ST_PATH"])
     errors = []
 
     request_id = None
@@ -146,9 +142,7 @@ def saml_response_st():
 @app.post("/login-rt")
 def login_rt():
     req = prepare_flask_request(request)
-    auth = OneLogin_Saml2_Auth(
-        req, custom_base_path=app.config["SAML_RT_PATH"]
-    )
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_RT_PATH"])
 
     return_to = "https://covid.tust.at/"
     sso_built_url = auth.login(return_to)
@@ -159,9 +153,7 @@ def login_rt():
 @app.route("/saml-rt", methods=["POST", "GET"])
 def saml_response_rt():
     req = prepare_flask_request(request)
-    auth = OneLogin_Saml2_Auth(
-        req, custom_base_path=app.config["SAML_RT_PATH"]
-    )
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=app.config["SAML_RT_PATH"])
     errors = []
 
     request_id = None

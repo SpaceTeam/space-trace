@@ -15,7 +15,7 @@ import requests
 from werkzeug.datastructures import FileStorage
 from pdf2image import convert_from_bytes
 
-from space_trace import app, db
+from space_trace import app
 from space_trace.models import User
 
 # Source: https://github.com/ehn-dcc-development/ehn-dcc-schema/blob/release/1.3.0/valuesets/disease-agent-targeted.json
