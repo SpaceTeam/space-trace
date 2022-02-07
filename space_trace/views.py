@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 from io import StringIO
+import json
 from traceback import format_exception
 import csv
 
@@ -26,6 +27,9 @@ from space_trace.models import User, Visit
 from space_trace.statistics import (
     active_users,
     active_visits,
+    checkins_per_hour,
+    monthly_visits,
+    most_frequent_users,
     total_users,
     total_visits,
 )
@@ -161,23 +165,15 @@ def delete_cert():
 @app.get("/admin")
 @require_admin
 def admin():
-    users = User.query.all()
-    users.sort(key=lambda u: u.email)
-
-    q = db.session.query(
-        db.func.strftime("%H", Visit.timestamp), db.func.count(Visit.id)
-    ).group_by(db.func.strftime("%H", Visit.timestamp))
-    checkin_per_hour = dict()
-    checkin_per_hour["labels"] = [f"{i:02d}" for i in range(24)]
-    checkin_per_hour["data"] = [0 for _ in range(24)]
-    for row in q:
-        checkin_per_hour["data"][int(row[0])] = row[1]
+    users = User.query.order_by(User.email).all()
 
     return render_template(
         "admin.html",
         user=flask.g.user,
         users=users,
-        checkin_per_hour=checkin_per_hour,
+        checkins_per_hour=checkins_per_hour(),
+        most_frequent_users=most_frequent_users(),
+        monthly_visits=monthly_visits(),
         now=datetime.now(),
     )
 
@@ -283,14 +279,15 @@ def help():
 @app.get("/statistic")
 @maybe_load_user
 def statistic():
+    user = flask.g.user
     return render_template(
         "statistic.html",
-        user=flask.g.user,
+        user=user,
         total_users=total_users(),
         total_visits=total_visits(),
         active_visits=active_visits(),
-        active_users_st=active_users(team="space"),
-        active_users_rt=active_users(team="racing"),
+        active_users_st=None if user is None else active_users(team="space"),
+        active_users_rt=None if user is None else active_users(team="racing"),
     )
 
 

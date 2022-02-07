@@ -90,7 +90,7 @@ This means they start at 00:00 and end at 23:59.
 
 
 
-<h3>Check ins per hour</h3>
+<h3 class="mt-5">Check ins per hour</h3>
 See when people check in.
 <div>
     <canvas id="myChart"></canvas>
@@ -98,7 +98,7 @@ See when people check in.
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
-    const checkins = {{ checkin_per_hour| tojson }};
+    const checkins = {{ checkins_per_hour | tojson }};
     const data = {
         labels: checkins["labels"],
         datasets: [{
@@ -121,8 +121,65 @@ See when people check in.
         config
     );
 </script>
-
 <p>
+
+<h3 class="mt-5">Monthly visits</h3>
+See which months are the most active ones.
+<div>
+    <canvas id="monthChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function drawMonthChart() {
+        const monthly_visits = {{ monthly_visits | tojson
+    }};
+    //const monthly_visits = { "labels": ["01-1970", "02-1970"], "data": [222, 128] };
+    const data = {
+        labels: monthly_visits["labels"],
+        datasets: [{
+            label: 'Monthly visits',
+            backgroundColor: '#2da44e',
+            borderColor: '#2da44e',
+            cubicInterpolationMode: 'monotone',
+            data: monthly_visits["data"]
+        }]
+    };
+
+    const config = {
+        type: 'bar',
+        data: data,
+        options: {}
+    };
+
+    const monthChart = new Chart(
+        document.getElementById('monthChart'),
+        config
+    );
+    }
+    drawMonthChart();
+</script>
+
+<h3 class="mt-5">Most frequent users</h3>
+Show how often the most frequent users checked in.
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Visits</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (num, user) in most_frequent_users %}
+        <tr>
+            <th scope="row">{{loop.index}}</th>
+            <td>{{user.full_name()}}</td>
+            <td>{{num}}</th>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 <h3 class="mt-5">Info for nerds</h3>
 The server thinks it is: {{now}}
 </p>
