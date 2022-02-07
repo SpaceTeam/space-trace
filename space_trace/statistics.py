@@ -3,7 +3,6 @@ functions might not only be used to strictly create statistics or graphs.
 """
 
 
-from re import I
 from typing import Any, Dict, List, Tuple
 from space_trace.models import User, Visit
 from space_trace import db
@@ -82,13 +81,13 @@ def most_frequent_users(limit: int = 16) -> List[Tuple[int, User]]:
     return [(count, user) for count, user in rows]
 
 
-def monthly_visits() -> Dict[str, Any]:
-    """Show the visits per month.
+def monthly_usage() -> Dict[str, Any]:
+    """Show the usage per month.
 
     This data is meant for a graph, the returned dict has the keys 'labels' for
     the x axis and 'data' with a numeric value.
     """
-    rows = (
+    visits = (
         db.session.query(
             db.func.strftime("%m-%Y", Visit.timestamp), db.func.count(Visit.id)
         )
@@ -97,9 +96,21 @@ def monthly_visits() -> Dict[str, Any]:
         .all()
     )
 
+    active_users = (
+        db.session.query(
+            db.func.strftime("%m-%Y", Visit.timestamp),
+            db.func.count(db.func.distinct(User.id)),
+        )
+        .filter(User.id == Visit.user)
+        .group_by(db.func.strftime("%m-%Y", Visit.timestamp))
+        .order_by(db.func.strftime("%Y-%m", Visit.timestamp))
+        .all()
+    )
+
     data = {
-        "labels": [r[0] for r in rows],
-        "data": [r[1] for r in rows],
+        "labels": [r[0] for r in visits],
+        "visits": [r[1] for r in visits],
+        "active_users": [r[1] for r in active_users],
     }
 
     return data

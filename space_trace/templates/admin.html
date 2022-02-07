@@ -123,7 +123,7 @@ See when people check in.
 </script>
 <p>
 
-<h3 class="mt-5">Monthly visits</h3>
+<h3 class="mt-5">Monthly usage</h3>
 See which months are the most active ones.
 <div>
     <canvas id="monthChart"></canvas>
@@ -131,17 +131,24 @@ See which months are the most active ones.
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     function drawMonthChart() {
-        const monthly_visits = {{ monthly_visits | tojson
+        const monthly_usage = {{ monthly_usage | tojson
     }};
     //const monthly_visits = { "labels": ["01-1970", "02-1970"], "data": [222, 128] };
     const data = {
-        labels: monthly_visits["labels"],
+        labels: monthly_usage["labels"],
         datasets: [{
             label: 'Monthly visits',
             backgroundColor: '#2da44e',
             borderColor: '#2da44e',
             cubicInterpolationMode: 'monotone',
-            data: monthly_visits["data"]
+            data: monthly_usage["visits"]
+        },
+        {
+            label: 'Monthly active users',
+            backgroundColor: '#0969da',
+            borderColor: '#0969da',
+            cubicInterpolationMode: 'monotone',
+            data: monthly_usage["active_users"]
         }]
     };
 

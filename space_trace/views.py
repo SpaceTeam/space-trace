@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 from io import StringIO
-import json
 from traceback import format_exception
 import csv
 
@@ -28,7 +27,7 @@ from space_trace.statistics import (
     active_users,
     active_visits,
     checkins_per_hour,
-    monthly_visits,
+    monthly_usage,
     most_frequent_users,
     total_users,
     total_visits,
@@ -173,7 +172,7 @@ def admin():
         users=users,
         checkins_per_hour=checkins_per_hour(),
         most_frequent_users=most_frequent_users(),
-        monthly_visits=monthly_visits(),
+        monthly_usage=monthly_usage(),
         now=datetime.now(),
     )
 
