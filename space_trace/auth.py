@@ -60,12 +60,12 @@ def require_admin(f):
     return wrapper
 
 
-def require_vaccinated(f):
+def require_2g(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         user = flask.g.user
-        if not user.is_vaccinated():
-            flash("You need to upload a vaccination certificate.", "info")
+        if not user.has_2g():
+            flash("You need to upload a certificate.", "info")
             return redirect(url_for("cert"))
 
         return f(*args, **kwargs)

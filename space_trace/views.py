@@ -16,7 +16,7 @@ from space_trace.auth import (
     maybe_load_user,
     require_admin,
     require_login,
-    require_vaccinated,
+    require_2g,
 )
 from space_trace.certificates import (
     detect_and_attach_cert,
@@ -44,7 +44,7 @@ def get_active_visit(user: User) -> Visit:
 
 @app.get("/")
 @require_login
-@require_vaccinated
+@require_2g
 def home():
     user: User = flask.g.user
 
@@ -61,13 +61,15 @@ def home():
         "Currently all of our developers are busy fixing edge-cases they "
         "forgot they put in last night at 3am."
 
-    expires_in = user.vaccinated_till - date.today()
-    if expires_in < timedelta(days=21):
-        color = "warning" if expires_in > timedelta(days=7) else "danger"
-        flash(
-            "Your vaccination certificate will expire " f"in {expires_in.days} day(s).",
-            color,
-        )
+    if user.is_vaccinated():
+        expires_in = user.vaccinated_till - date.today()
+        if expires_in < timedelta(days=21):
+            color = "warning" if expires_in > timedelta(days=7) else "danger"
+            flash(
+                "Your vaccination certificate will expire "
+                f"in {expires_in.days} day(s).",
+                color,
+            )
 
     return render_template(
         "visit.html",
@@ -80,7 +82,7 @@ def home():
 
 @app.post("/")
 @require_login
-@require_vaccinated
+@require_2g
 def add_visit():
     user: User = flask.g.user
 
@@ -120,7 +122,10 @@ def upload_cert():
         detect_and_attach_cert(file, user)
 
         db.session.query(User).filter(User.id == user.id).update(
-            {"vaccinated_till": user.vaccinated_till}
+            {
+                "vaccinated_till": user.vaccinated_till,
+                "tested_till": user.tested_till,
+            }
         )
         user = User.query.filter(User.id == user.id).first()
         db.session.commit()
@@ -137,11 +142,17 @@ def upload_cert():
         flash(message, "danger")
         return redirect(request.url)
 
-    flash(
-        "Successfully uploaded a certificate "
-        f"which is valid till {user.vaccinated_till}",
-        "success",
-    )
+    # TODO: Figure out a better method to detect if a test or certificate was
+    # uploaded.
+    if user.vaccinated_till and user.vaccinated_till >= date.today():
+        message = (
+            "Successfully uploaded a certificate "
+            f"which is valid till {user.vaccinated_till}"
+        )
+    else:
+        message = f"Successfully uploaded a test which is valid till {user.tested_till}"
+
+    flash(message, "success")
     return redirect(url_for("home"))
 
 
@@ -154,10 +165,34 @@ def delete_cert():
         flash("You don't have a certificate to delete", "danger")
         return redirect(url_for("cert"))
 
-    db.session.query(User).filter(User.id == user.id).update({"vaccinated_till": None})
+    db.session.query(User).filter(User.id == user.id).update(
+        {
+            "vaccinated_till": None,
+        }
+    )
     db.session.commit()
 
     flash("Successfully deleted your certificate", "success")
+    return redirect(url_for("cert"))
+
+
+@app.post("/test-delete")
+@require_login
+def delete_test():
+    user: User = flask.g.user
+
+    if user.tested_till is None:
+        flash("You don't have a test to delete", "danger")
+        return redirect(url_for("cert"))
+
+    db.session.query(User).filter(User.id == user.id).update(
+        {
+            "tested_till": None,
+        }
+    )
+    db.session.commit()
+
+    flash("Successfully deleted your test", "success")
     return redirect(url_for("cert"))
 
 

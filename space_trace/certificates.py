@@ -173,20 +173,49 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     assert_cert_sign(cose_data)
 
     if "v" in data[-260][1]:
-        detect_and_attach_vaccine(data, user)
+        attach_vaccine(data, user)
     elif "r" in data[-260][1]:
-        detect_and_attach_recovery(data, user)
+        attach_recovery(data, user)
     elif "t" in data[-260][1]:
-        raise Exception(
-            "The certificate must be for vaccination or recovery, we don't allow tests"
-        )
+        if user.team != "racing":
+            raise Exception(
+                "The certificate must be for vaccination or recovery, we don't allow tests!"
+            )
+        attach_test(data, user)
+
     else:
         raise Exception(
             "Cannot recognize certificate type, don't know what to do here."
         )
 
 
-def detect_and_attach_recovery(data: Dict, user: User):
+def attach_test(data: Dict, user: User):
+    # Verify the disease in the certificate
+    if COVID_19_ID != data[-260][1]["t"][0]["tg"]:
+        raise Exception("The test must be for covid19")
+
+    # Verify that test was negative
+    if "260415000" != data[-260][1]["t"][0]["tr"]:
+        id = data[-260][1]["t"][0]["tr"]
+        raise Exception(f"The test was not negative ({id})")
+
+    # Verify a pcr test
+    if "nm" not in data[-260][1]["t"][0]:
+        raise Exception("We only allow PCR tests.")
+
+    valid_till = datetime.fromisoformat(data[-260][1]["t"][0]["sc"][:-1]) + timedelta(
+        hours=48
+    )
+
+    # Verify the test is still valid
+    if valid_till <= datetime.now():
+        raise Exception("This test certificate already expired!")
+
+    # Update the user
+    user.tested_till = valid_till
+
+
+def attach_recovery(data: Dict, user: User):
     # Verify the disease in the certificate
     if COVID_19_ID != data[-260][1]["r"][0]["tg"]:
         raise Exception("The certificate must be for covid19")
@@ -215,7 +244,7 @@ def detect_and_attach_recovery(data: Dict, user: User):
     user.vaccinated_till = valid_till
 
 
-def detect_and_attach_vaccine(data: Dict, user: User):
+def attach_vaccine(data: Dict, user: User):
     # Verify the disease in the certificate
     if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
         raise Exception("The certificate must be for covid19")

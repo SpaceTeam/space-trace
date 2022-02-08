@@ -12,6 +12,7 @@ class User(db.Model):
     team: str = db.Column(db.Text, nullable=False)
     created_at: datetime = db.Column(db.DateTime, nullable=False, default=db.func.now())
     vaccinated_till: date = db.Column(db.Date, nullable=True, default=None)
+    tested_till: datetime = db.Column(db.DateTime, nullable=True, default=None)
 
     __table_args__ = (db.Index("idx_users_email", email),)
 
@@ -41,8 +42,24 @@ class User(db.Model):
         name = "-".join(map(lambda n: n[0].upper() + n[1:], name.split("-")))
         return name
 
+    def is_tested(self) -> bool:
+        return self.tested_till is not None and self.tested_till >= datetime.now()
+
     def is_vaccinated(self) -> bool:
         return self.vaccinated_till is not None and self.vaccinated_till >= date.today()
+
+    def has_2g(self) -> bool:
+        if self.vaccinated_till is not None and self.vaccinated_till >= date.today():
+            return True
+
+        if (
+            self.team == "racing"
+            and self.tested_till is not None
+            and self.tested_till >= datetime.now()
+        ):
+            return True
+
+        return False
 
     def __repr__(self):
         return f"<User id={self.id}, name={self.name}, email={self.email}>"

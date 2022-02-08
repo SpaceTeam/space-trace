@@ -38,4 +38,11 @@ You can only upload images of QR codes or PDFs of your vaccine or recovery certi
 </form>
 {% endif %}
 
+{% if user.is_tested() %}
+<h5>✅ Your current test is valid till {{user.tested_till}}.</h5>
+<form action="{{url_for('delete_test')}}" method="post">
+    <button class="btn btn-outline-danger">Delete</button>
+</form>
+{% endif %}
+
 {% endblock %}
