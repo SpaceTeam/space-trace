@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <h1>Certificate</h1>
-You can only upload images of QR codes or PDFs.
+You can only upload images of QR codes or PDFs of your vaccine or recovery certificate.
 
 <form action="/cert" method="post" enctype="multipart/form-data" class="mb-5">
     <div class="mb-3 mt-2">
@@ -10,7 +10,7 @@ You can only upload images of QR codes or PDFs.
     <div class="mb-3 form-check">
         <input type="checkbox" class="form-check-input" id="checkStorage" onchange="enableForm()">
         <label class="form-check-label" for="exampleCheck1">I agree that the
-            expiration date of my vaccination certificate will be stored on
+            expiration date of my vaccination or recovery certificate will be stored on
             TU Wien Space Team Servers and that I read and agree to the
             <a href="/static/Zustimmungserklaerung.pdf">Zustimmungserklärung</a>.
         </label>
@@ -32,7 +32,7 @@ You can only upload images of QR codes or PDFs.
 </script>
 
 {% if user.is_vaccinated() %}
-<h5>Your certificate is valid till {{user.vaccinated_till}}.</h5>
+<h5>✅ Your current certificate is valid till {{user.vaccinated_till}}.</h5>
 <form action="{{url_for('delete_cert')}}" method="post">
     <button class="btn btn-outline-danger">Delete</button>
 </form>

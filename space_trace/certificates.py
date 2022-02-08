@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Dict
 from PIL import Image
 import base45
 import zlib
@@ -68,7 +68,7 @@ def assert_cert_belong_to(cert_data: any, user: User):
     first_name_cert = canonicalize_name(cert_data[-260][1]["nam"]["gnt"])
     last_name_cert = canonicalize_name(cert_data[-260][1]["nam"]["fnt"])
 
-    # Using in because sometimes the emails don't contain the full name
+    # Using `in` because sometimes the emails don't contain the full name
     if first_name not in first_name_cert or last_name not in last_name_cert:
         raise Exception(
             "The name in the certificate "
@@ -166,24 +166,59 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     # decode cbor
     data = flynn.decoder.loads(cbor_data)
 
-    # Verify that this is a vaccine certificate
-    if "v" not in data[-260][1]:
-        message = "The certificate must be for a vaccination"
-        if "t" in data[-260][1]:
-            message += ", we don't allow tests"
-        if "r" in data[-260][1]:
-            message += ", we don't allow recovered"
-        raise Exception(message)
-
-    # Verify the data now
-    if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
-        raise Exception("The certificate must be for covid19")
+    # Verify that the user belongs to that certificate
+    assert_cert_belong_to(data, user)
 
     # Verify the certificate signature
     assert_cert_sign(cose_data)
 
-    # Verify that the user belongs to that certificate
-    assert_cert_belong_to(data, user)
+    if "v" in data[-260][1]:
+        detect_and_attach_vaccine(data, user)
+    elif "r" in data[-260][1]:
+        detect_and_attach_recovery(data, user)
+    elif "t" in data[-260][1]:
+        raise Exception(
+            "The certificate must be for vaccination or recovery, we don't allow tests"
+        )
+    else:
+        raise Exception(
+            "Cannot recognize certificate type, don't know what to do here."
+        )
+
+
+def detect_and_attach_recovery(data: Dict, user: User):
+    # Verify the disease in the certificate
+    if COVID_19_ID != data[-260][1]["r"][0]["tg"]:
+        raise Exception("The certificate must be for covid19")
+
+    # Recovery certificates can be issued before they are valid. Verify now that
+    # the certificate is already valid.
+    valid_from = date.fromisoformat(data[-260][1]["r"][0]["df"])
+    if valid_from > date.today():
+        raise Exception(
+            f"The recovery certificate is not yet valid, come back at {valid_from}!"
+        )
+
+    # Verify that the recovery is newer that whatever is currently stored
+    valid_till = date.fromisoformat(data[-260][1]["r"][0]["du"])
+    if user.vaccinated_till is not None:
+        if user.vaccinated_till > valid_till:
+            raise Exception("You already uploaded a newer certificate")
+        elif user.vaccinated_till == valid_till:
+            raise Exception("You already uploaded this certificate")
+
+    # Update the user
+    # TODO: Yes we update the vaccinated field even though the user is recoverd,
+    # we currently don't have a concept in the db for recovered and it honestly
+    # doesn't make sense to differentiate between them. The solution is probably
+    # to rename the DB column to something like "valid_till".
+    user.vaccinated_till = valid_till
+
+
+def detect_and_attach_vaccine(data: Dict, user: User):
+    # Verify the disease in the certificate
+    if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
+        raise Exception("The certificate must be for covid19")
 
     # Verify that this vaccination is newer than the last one
     vaccinated_till = calc_vaccinated_till(data)
