@@ -81,6 +81,25 @@ def most_frequent_users(limit: int = 16) -> List[Tuple[int, User]]:
     return [(count, user) for count, user in rows]
 
 
+def daily_usage() -> Dict[str, Any]:
+    """Show the usage per day (last 30)."""
+    cutoff_timestamp = datetime.now() - timedelta(days=30)
+    visits = (
+        db.session.query(
+            db.func.strftime("%Y-%m-%d", Visit.timestamp), db.func.count(Visit.id)
+        )
+        .filter(Visit.timestamp >= cutoff_timestamp)
+        .group_by(db.func.strftime("%Y-%m-%d", Visit.timestamp))
+        .order_by(db.func.strftime("%Y-%m-%d", Visit.timestamp))
+        .all()
+    )
+
+    return {
+        "labels": [v[0] for v in visits],
+        "visits": [v[1] for v in visits],
+    }
+
+
 def monthly_usage() -> Dict[str, Any]:
     """Show the usage per month.
 
@@ -89,9 +108,9 @@ def monthly_usage() -> Dict[str, Any]:
     """
     visits = (
         db.session.query(
-            db.func.strftime("%m-%Y", Visit.timestamp), db.func.count(Visit.id)
+            db.func.strftime("%Y-%m", Visit.timestamp), db.func.count(Visit.id)
         )
-        .group_by(db.func.strftime("%m-%Y", Visit.timestamp))
+        .group_by(db.func.strftime("%Y-%m", Visit.timestamp))
         .order_by(db.func.strftime("%Y-%m", Visit.timestamp))
         .all()
     )

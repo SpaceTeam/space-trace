@@ -27,6 +27,7 @@ from space_trace.statistics import (
     active_users,
     active_visits,
     checkins_per_hour,
+    daily_usage,
     monthly_usage,
     most_frequent_users,
     total_users,
@@ -207,6 +208,7 @@ def admin():
         users=users,
         checkins_per_hour=checkins_per_hour(),
         most_frequent_users=most_frequent_users(),
+        daily_usage=daily_usage(),
         monthly_usage=monthly_usage(),
         now=datetime.now(),
     )
