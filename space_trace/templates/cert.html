@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
 <h1>Certificate</h1>
-You can only upload images of QR codes or PDFs of your vaccine or recovery certificate.
+You can only upload images of QR codes or PDFs of your vaccine{% if user.team == 'racing' %}, test {% endif %} or
+recovery certificate.
 
 <form action="/cert" method="post" enctype="multipart/form-data" class="mb-5">
     <div class="mb-3 mt-2">
@@ -10,7 +11,7 @@ You can only upload images of QR codes or PDFs of your vaccine or recovery certi
     <div class="mb-3 form-check">
         <input type="checkbox" class="form-check-input" id="checkStorage" onchange="enableForm()">
         <label class="form-check-label" for="exampleCheck1">I agree that the
-            expiration date of my vaccination or recovery certificate will be stored on
+            expiration date of my certificate will be stored on
             TU Wien Space Team Servers and that I read and agree to the
             <a href="/static/Zustimmungserklaerung.pdf">Zustimmungserklärung</a>.
         </label>
