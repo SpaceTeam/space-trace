@@ -8,11 +8,11 @@ class User(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.Text, nullable=False)
     email: str = db.Column(db.Text, unique=True, nullable=False)
-    # Either 'space' or 'racing' to specify which team the user belongs to
-    team: str = db.Column(db.Text, nullable=False)
+    team: str = db.Column(db.Text, nullable=False)  # Either 'space' or 'racing'
     created_at: datetime = db.Column(db.DateTime, nullable=False, default=db.func.now())
     vaccinated_till: date = db.Column(db.Date, nullable=True, default=None)
     tested_till: datetime = db.Column(db.DateTime, nullable=True, default=None)
+    medical_exception: bool = db.Column(db.Boolean, nullable=False, default=False)
 
     __table_args__ = (db.Index("idx_users_email", email),)
 
@@ -49,17 +49,7 @@ class User(db.Model):
         return self.vaccinated_till is not None and self.vaccinated_till >= date.today()
 
     def has_2g(self) -> bool:
-        if self.vaccinated_till is not None and self.vaccinated_till >= date.today():
-            return True
-
-        if (
-            self.team == "racing"
-            and self.tested_till is not None
-            and self.tested_till >= datetime.now()
-        ):
-            return True
-
-        return False
+        return self.is_vaccinated() or self.is_tested()
 
     def __repr__(self):
         return f"<User id={self.id}, name={self.name}, email={self.email}>"

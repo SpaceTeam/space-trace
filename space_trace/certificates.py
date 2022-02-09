@@ -177,12 +177,14 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     elif "r" in data[-260][1]:
         attach_recovery(data, user)
     elif "t" in data[-260][1]:
-        if user.team != "racing":
+        # Only racing team members can upload tests or specially whitelisted
+        # users
+        if user.team == "racing" or user.medical_exception:
+            attach_test(data, user)
+        else:
             raise Exception(
                 "The certificate must be for vaccination or recovery, we don't allow tests!"
             )
-        attach_test(data, user)
-
     else:
         raise Exception(
             "Cannot recognize certificate type, don't know what to do here."
@@ -199,7 +201,7 @@ def attach_test(data: Dict, user: User):
         id = data[-260][1]["t"][0]["tr"]
         raise Exception(f"The test was not negative ({id})")
 
-    # Verify a pcr test
+    # Verify it's a pcr test
     if "nm" not in data[-260][1]["t"][0]:
         raise Exception("We only allow PCR tests.")
 
@@ -210,6 +212,10 @@ def attach_test(data: Dict, user: User):
     # Verify the test is still valid
     if valid_till <= datetime.now():
         raise Exception("This test certificate already expired!")
+
+    # Verify that the user hasn't already uploaded a newer test
+    if user.tested_till and valid_till <= user.tested_till:
+        raise Exception("You already have uploaded a newer test!")
 
     # Update the user
     user.tested_till = valid_till

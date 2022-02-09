@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN tested_till TEXT;
+ALTER TABLE users ADD COLUMN medical_exception BOOLEAN NOT NULL DEFAULT FALSE;

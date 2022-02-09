@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
 <h1>Certificate</h1>
-You can only upload images of QR codes or PDFs of your vaccine{% if user.team == 'racing' %}, test {% endif %} or
+You can only upload images of QR codes or PDFs of your vaccine{% if user.team == 'racing' or user.medical_exception %},
+test {% endif %} or
 recovery certificate.
 
 <form action="/cert" method="post" enctype="multipart/form-data" class="mb-5">
