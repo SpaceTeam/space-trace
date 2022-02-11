@@ -108,6 +108,9 @@ See which of the last 30 days where the most active
         ]
     };
 
+    const endDate = new Date()
+    let startDate = new Date()
+    startDate.setDate(new Date().getDate() - 31)
     const config = {
         type: 'bar',
         data: data,
@@ -115,7 +118,13 @@ See which of the last 30 days where the most active
             scales: {
                 x: {
                     type: 'time',
-                    time: { tooltipFormat: 'MMM DD', }
+                    time: {
+                        tooltipFormat: 'MMM DD',
+                        unit: 'day',
+                        round: true,
+                    },
+                    suggestedMin: startDate.toISOString(),
+                    suggestedMax: endDate.toISOString(),
                 }
             }
         }
