@@ -18,10 +18,12 @@ jobs:
       with:
         path: ~/.cache/pip
         key: ${{ hashFiles('requirements.txt') }}    
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get -y install libzbar0 poppler-utils pkg-config libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+    - name: Install python dependencies
+      run: |
         python -m pip install -r requirements.txt
         python -m pip install pytest
     - name: Setup config
