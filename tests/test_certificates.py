@@ -124,7 +124,7 @@ def test_calc_vaccinated_till_with_first_shot():
 
 
 def test_assert_cert_belong_to_with_matching():
-    user = User("Tester", "ada.lovelace@spaceteam.at", "space")
+    user = User("ada.lovelace@spaceteam.at", "space")
     data = {
         -260: {
             1: {
@@ -140,7 +140,7 @@ def test_assert_cert_belong_to_with_matching():
 
 
 def test_assert_cert_belong_to_with_not_matching():
-    user = User("Tester", "ada.lovelace@spaceteam.at", "space")
+    user = User("ada.lovelace@spaceteam.at", "space")
     data = {
         -260: {
             1: {
@@ -161,7 +161,7 @@ def test_assert_cert_belong_to_with_matching_double_name():
     Sometimes the email doesn't have all middle names but the certificates
     have.
     """
-    user = User("Tester", "anna.bauer@spaceteam.at", "space")
+    user = User("anna.bauer@spaceteam.at", "space")
     data = {
         -260: {
             1: {

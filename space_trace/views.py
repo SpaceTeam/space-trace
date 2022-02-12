@@ -1,7 +1,6 @@
 from datetime import date, datetime, timedelta
-from io import StringIO
+import json
 from traceback import format_exception
-import csv
 
 import flask
 from flask import redirect, send_file, url_for, request, flash
@@ -21,6 +20,7 @@ from space_trace.auth import (
 from space_trace.certificates import (
     detect_and_attach_cert,
 )
+from space_trace.export import get_contacts_of, get_users_between, users_to_csv
 from space_trace.jokes import get_daily_joke
 from space_trace.models import User, Visit
 from space_trace.statistics import (
@@ -224,36 +224,13 @@ def contacts_csv():
         flash("End date cannot be before start date.", "warning")
         return redirect(url_for("admin"))
 
-    # This may look weired but we need to do a bit of arithmetic with both
-    # timestamps. At the moment both timestamps point to the
-    # start of the day (0:00) but end should point to the last minute so if
-    # both point to the same day one whole day gets selected.
-    # Actually start should point to 12h before that because members that only
-    # logged in 12h bevore are still considered as in the HQ.
-    start = start - timedelta(hours=12)
-    end = end + timedelta(hours=24)
-
-    # Get all email adresses of people logged in that time period
-    users = (
-        db.session.query(User)
-        .filter(User.id == Visit.user)
-        .filter(db.and_(Visit.timestamp > start, Visit.timestamp < end))
-        .all()
-    )
+    users = get_users_between(start, end)
 
     if len(users) == 0:
         flash("No members were in the HQ at that time 👍", "success")
         return redirect("admin")
 
-    # Convert to a csv
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(["first name", "last name", "team"])
-
-    for user in users:
-        cw.writerow([user.first_name(), user.last_name(), user.team])
-
-    output = make_response(si.getvalue())
+    output = make_response(users_to_csv(users))
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
@@ -265,42 +242,13 @@ def smart_contacts_csv():
     format = "%Y-%m-%d"
     start = datetime.strptime(request.args.get("startDate"), format)
     infected_id = int(request.args.get("infectedId"))
-
-    # This may look weired but we need to do a bit of arithmetic with both
-    # timestamps. At the moment both timestamps point to the
-    # start of the day (0:00) but end should point to the last minute so if
-    # both point to the same day one whole day gets selected.
-    # Actually start should point to 12h before that because members that only
-    # logged in 12h bevore are still considered as in the HQ.
-    start = start - timedelta(hours=12)
-
-    # Get all contacts of the infected
-    visit1: User = db.aliased(Visit)
-    visit2: User = db.aliased(Visit)
-    users = (
-        db.session.query(User)
-        .filter(visit1.user == infected_id)
-        .filter(visit1.timestamp > start)
-        .filter(visit2.timestamp > db.func.date(visit1.timestamp, "-12 hours"))
-        .filter(visit2.timestamp < db.func.date(visit1.timestamp, "+12 hours"))
-        .filter(User.id == visit2.user)
-        .filter(User.id != infected_id)
-        .all()
-    )
+    users = get_contacts_of(start, infected_id)
 
     if len(users) == 0:
         flash("No members were in the HQ at that time 👍", "success")
         return redirect(url_for("admin"))
 
-    # Convert to a csv
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(["first name", "last name", "team"])
-
-    for user in users:
-        cw.writerow([user.first_name(), user.last_name(), user.team])
-
-    output = make_response(si.getvalue())
+    output = make_response(users_to_csv(users))
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
@@ -347,6 +295,24 @@ def handle_bad_request(e):
         ),
         500,
     )
+
+
+@app.get("/me")
+@require_login
+def me():
+    def serializer(data):
+        if isinstance(data, datetime):
+            return data.isoformat()
+        elif isinstance(data, date):
+            return data.isoformat()
+        else:
+            return "<not serializable>"
+
+    response = make_response(
+        json.dumps(flask.g.user.__dict__, default=serializer, indent=2)
+    )
+    response.headers["Content-type"] = "application/json"
+    return response
 
 
 @app.get("/goots")

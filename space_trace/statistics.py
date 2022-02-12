@@ -28,7 +28,7 @@ def active_visits() -> int:
 def active_users(team: str = None) -> List[User]:
     """List the currently active users in the HQ.
 
-    :arg str team: Filter the users by team, if None all teams are considered.
+    :param team: Filter the users by team, if None all teams are considered.
     :return: List of users
     """
     cutoff_timestamp = datetime.now() - timedelta(hours=12)
@@ -68,7 +68,7 @@ def checkins_per_hour() -> Dict[str, Any]:
 def most_frequent_users(limit: int = 16) -> List[Tuple[int, User]]:
     """Show the users with the most visits.
 
-    :arg limit: Limits the number of returned users.
+    :param limit: Limits the number of returned users.
     """
     rows = (
         db.session.query(db.func.count(User.id), User)

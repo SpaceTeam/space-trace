@@ -4,8 +4,8 @@
 {% if not visit %}
 <h1>Check in for today</h1>
 {% if joke is none%}
-Hi {{user.name}},<br>
-to enter the HQ you need to register for contact-tracing.
+Hi {{user.first_name()}} 👋<br>
+To enter the HQ you need to register for contact-tracing.
 {% else %}
 {{joke}}
 {% endif %}
@@ -14,7 +14,7 @@ to enter the HQ you need to register for contact-tracing.
 </form>
 {% else %}
 <h1>Checked in 👍</h1>
-{{user.name}}, you are registered till: <strong>{{visit_deadline.strftime('%H:%M %A (%Y-%m-%d)')}}</strong>
+{{user.first_name()}}, you are registered till: <strong>{{visit_deadline.strftime('%H:%M %A (%Y-%m-%d)')}}</strong>
 <br>
 {% endif %}
 

@@ -6,7 +6,6 @@ class User(db.Model):
     __tablename__ = "users"
 
     id: int = db.Column(db.Integer, primary_key=True)
-    name: str = db.Column(db.Text, nullable=False)
     email: str = db.Column(db.Text, unique=True, nullable=False)
     team: str = db.Column(db.Text, nullable=False)  # Either 'space' or 'racing'
     created_at: datetime = db.Column(db.DateTime, nullable=False, default=db.func.now())
@@ -16,8 +15,7 @@ class User(db.Model):
 
     __table_args__ = (db.Index("idx_users_email", email),)
 
-    def __init__(self, name: str, email: str, team: str):
-        self.name = name
+    def __init__(self, email: str, team: str):
         self.email = email
         self.team = team
 
@@ -52,7 +50,7 @@ class User(db.Model):
         return self.is_vaccinated() or self.is_tested()
 
     def __repr__(self):
-        return f"<User id={self.id}, name={self.name}, email={self.email}>"
+        return f"<User id={self.id}, email={self.email}, team={self.team}>"
 
 
 class Visit(db.Model):

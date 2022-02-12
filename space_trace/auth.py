@@ -118,16 +118,15 @@ def saml_response_st():
 
     if "AuthNRequestID" in session:
         del session["AuthNRequestID"]
-    username = str(auth.get_nameid())
+    email = str(auth.get_nameid())
 
-    user = User.query.filter(User.email == username).first()
+    user = User.query.filter(User.email == email).first()
     if user is None:
-        firstname = username.split(".", 1)[0].capitalize()
-        user = User(firstname, username, "space")
+        user = User(email, "space")
         db.session.add(user)
         db.session.commit()
 
-    session["username"] = username
+    session["username"] = email
     session.permanent = True
 
     self_url = OneLogin_Saml2_Utils.get_self_url(req)
@@ -168,16 +167,15 @@ def saml_response_rt():
 
     if "AuthNRequestID" in session:
         del session["AuthNRequestID"]
-    username = str(auth.get_nameid())
+    email = str(auth.get_nameid())
 
-    user = User.query.filter(User.email == username).first()
+    user = User.query.filter(User.email == email).first()
     if user is None:
-        firstname = username.split(".", 1)[0].capitalize()
-        user = User(firstname, username, "racing")
+        user = User(email, "racing")
         db.session.add(user)
         db.session.commit()
 
-    session["username"] = username
+    session["username"] = email
     session.permanent = True
 
     self_url = OneLogin_Saml2_Utils.get_self_url(req)
@@ -196,14 +194,14 @@ def login_debug():
 
     email = app.config["DEBUG_EMAIL"]
     team = app.config["DEBUG_TEAM"]
-    firstname = "Testuser"
     session["username"] = email
     try:
-        user = User(firstname, email, team)
+        user = User(email, team)
         db.session.add(user)
         db.session.commit()
-    except Exception:
-        pass
+    except Exception as e:
+        flash(str(e), "danger")
+
     return redirect(url_for("home"))
 
 
