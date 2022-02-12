@@ -195,12 +195,12 @@ def login_debug():
     email = app.config["DEBUG_EMAIL"]
     team = app.config["DEBUG_TEAM"]
     session["username"] = email
-    try:
+    session.permanent = True
+    user = User.query.filter(User.email == email).first()
+    if user is None:
         user = User(email, team)
         db.session.add(user)
         db.session.commit()
-    except Exception as e:
-        flash(str(e), "danger")
 
     return redirect(url_for("home"))
 
