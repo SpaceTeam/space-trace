@@ -84,6 +84,10 @@ def most_frequent_users(limit: int = 16) -> List[Tuple[int, User]]:
 def daily_usage() -> Dict[str, Any]:
     """Show the usage per day (last 30)."""
     cutoff_timestamp = datetime.now() - timedelta(days=30)
+    cutoff_timestamp = cutoff_timestamp.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
     visits = (
         db.session.query(
             db.func.strftime("%Y-%m-%d", Visit.timestamp), db.func.count(Visit.id)
