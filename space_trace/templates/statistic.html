@@ -1,48 +1,61 @@
 {% extends "layout.html" %}
 {% block body %}
 <h1>Statistic</h1>
-<p>
-    <strong>{{total_users}}</strong> members are already using this tool, and
-    checked in <strong>{{total_visits}}</strong> times.
-</p>
+<strong>{{total_users}}</strong> members are already using this tool, and
+checked in <strong>{{total_visits}}</strong> times.
 
-<h2>Currently in the HQ ({{active_visits}})</h2>
+<!-- <h2>Currently in the HQ ({{active_visits}})</h2> -->
 {% if user is none %}
 🔒 <i>Only logged in users can see the names.</i>
 {% else %}
 
-<div class="mt-4">
-    <h3>Space Team ({{active_users_st | length}})</h3>
-    {% if active_users_st|length > 0%}
-    <table class="table">
-        <thead>
-            <tr>
-                <td>#</td>
-                <td>First Name</td>
-                <td>Last Name</td>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in active_users_st %}
-            <tr>
-                <td>
-                    {{loop.index}}
-                </td>
-                <td>{{user.first_name()}}</td>
-                <td>{{user.last_name()}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<style>
+    .team-tables {
+        display: flex;
+        flex-direction: column;
+    }
+
+    tr:last-child {
+        border-bottom: 0px solid transparent !important;
+    }
+</style>
+
+<div class="team-tables">
+    <div class="mt-5" {%if user.team=='space' %} style="order: -1" {%endif%}>
+        <h2>Space Team in HQ ({{active_users_st | length}})</h2>
+        {% if active_users_st|length > 0%}
+        <table class="table">
+            <thead>
+                <tr>
+                    <td><strong>#</strong></td>
+                    <td><strong>First Name</strong></td>
+                    <td><strong>Last Name</strong></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in active_users_st %}
+                <tr>
+                    <td>
+                        {{loop.index}}
+                    </td>
+                    <td>{{user.first_name()}}</td>
+                    <td>{{user.last_name()}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {%else%}
+    <i>There is nobody to see.</i>
 </div>
-{%else%}
-<i>There is nobody to see.</i>
+
 {% endif %}
 
-<div class="mt-4">
-    <h3>Racing Team ({{active_users_rt | length}})</h3>
+
+<div class="mt-5" {%if user.team=='racing' %} style="order: -1" {%endif%}>
+    <h2>Racing Team in HQ ({{active_users_rt | length}})</h2>
     {% if active_users_rt|length > 0%}
-    <table class="table">
+    <table class="fancy-table">
         <thead>
             <tr>
                 <td>#</td>
@@ -65,6 +78,8 @@
 </div>
 {%else%}
 <i>There is nobody to see.</i>
+</div>
+</div>
 {% endif %}
 {% endif %}
 {% endblock %}
