@@ -1,11 +1,11 @@
 # space-trace
 
-Tracing service for the [TU Wien Spaceteam](https://spaceteam.at/?lang=en).
+Tracing service for the [TU Wien Space Team](https://spaceteam.at/?lang=en) and [TU Wien Racing Team](https://en.tuwienracing.at/).
 ![Screenshot](https://user-images.githubusercontent.com/21206831/144690589-8ba45b74-cd64-4dd8-8796-748f5ea0fa78.png)
 
 ## Features
 
-- Login with Space Team Google account (SAML).
+- Login with Space / Racing Team Google account (SAML).
 - Decode and verify [EU Digital COVID Certificates](https://en.wikipedia.org/wiki/EU_Digital_COVID_Certificate)
 - Upload certificates as PDF or Image.
 - Export contacts in day range

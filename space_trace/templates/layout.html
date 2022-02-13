@@ -40,18 +40,28 @@
         </div>
         <div class="container-sm mt-1 text-center">
             {% if user is defined and user is not none %}
-            <a href="{{url_for('home')}}" class="tab-link">Check-In</a> ·
+            <a href="{{url_for('home')}}" class="tab-link">Check-In</a>
             {% endif %}
-            <a href="{{url_for('statistic')}}" class="tab-link">Statistic</a> ·
+
             {% if user is defined and user is not none %}
-            <a href="{{url_for('cert')}}" class="tab-link">Certificate</a> ·
-            {% if user.is_admin() %}
-            <a href="{{url_for('admin')}}" class="tab-link">Admin</a> ·
+            · <a href="{{url_for('cert')}}" class="tab-link">Certificate</a>
             {% endif %}
-            <a href="{{url_for('logout')}}" class="tab-link">Logout</a>
-            {% else %}
+
+            {% if user is defined and user is not none and user.is_admin() %}
+            · <a href="{{url_for('admin')}}" class="tab-link">Admin</a>
+            {% endif %}
+
+
+            {% if user is not defined or user is none %}
             <a href="{{url_for('login')}}" class="tab-link">Login</a>
             {% endif %}
+
+            · <a href="{{url_for('statistic')}}" class="tab-link">Statistic</a>
+
+            {% if user is defined and user is not none %}
+            · <a href="{{url_for('logout')}}" class="tab-link">Logout</a>
+            {% endif %}
+
         </div>
 
 
