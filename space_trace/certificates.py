@@ -34,7 +34,7 @@ def calc_vaccinated_till(data: Any) -> date:
     valid_until = None
 
     # Check if it is the last dosis
-    if hcert["dn"] != hcert["sd"] or hcert["sd"] == 1:
+    if hcert["dn"] < hcert["sd"] or hcert["sd"] == 1:
         raise Exception("With this certificate you are not fully immunized.")
 
     # First set of vaccinations is 180 valid
