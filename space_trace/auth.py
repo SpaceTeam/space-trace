@@ -74,9 +74,10 @@ def require_2g(f):
 
 
 def prepare_flask_request(request):
-    # If server is behind proxys or balancers use the HTTP_X_FORWARDED fields
+    # NOTE: We say that it was always https as this software only runs behind
+    # a load balancer which only accepts HTTPS requests.
     return {
-        "https": "on" if request.scheme == "https" else "off",
+        "https": "on",
         "http_host": request.host,
         "script_name": request.path,
         "get_data": request.args.copy(),
