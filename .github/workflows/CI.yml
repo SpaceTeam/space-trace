@@ -49,6 +49,7 @@ jobs:
         proxy_passphrase: ${{ secrets.PROXY_PASSPHRASE }}
         proxy_key: ${{ secrets.PROXY_KEY }}
         proxy_port: ${{ secrets.PROXY_PORT }}
+        script_stop: true
         script: |
           cd space-trace
           git pull
