@@ -26,7 +26,7 @@ def delete_debug_visits():
     if user is None:
         print("😴 Debug user is not in the DB... nothing to do here")
         return
-
+    #this is a ci test
     # Delete all visits
     db.session.query(Visit).filter(Visit.user == user.id).delete()
     db.session.commit()
