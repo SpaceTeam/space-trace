@@ -18,6 +18,7 @@ from space_trace.auth import (
     require_2g,
 )
 from space_trace.certificates import (
+    CertificateException,
     detect_and_attach_cert,
 )
 from space_trace.export import get_contacts_of, get_users_between, users_to_csv
@@ -134,13 +135,11 @@ def upload_cert():
     except IntegrityError:
         flash("This certificate was already uploaded", "warning")
         return redirect(request.url)
-
+    except CertificateException as e:
+        flash(e.message, "danger")
+        return redirect(request.url)
     except Exception as e:
-        if hasattr(e, "message"):
-            message = e.message
-        else:
-            message = str(e)
-        flash(message, "danger")
+        flash(str(e), "danger")
         return redirect(request.url)
 
     # TODO: Figure out a better method to detect if a test or certificate was

@@ -22,11 +22,21 @@ from space_trace.models import User
 COVID_19_ID = "840539006"
 
 
+class CertificateException(Exception):
+    """
+    A custom exception for this module. This Exception has always the message
+    field set to a useful description you can show the user.
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 def calc_vaccinated_till(data: Any) -> date:
     """
-    Processes a cose document and returns the date it will expire.
+    Processes a cose vaccine document and returns the date it will expire.
 
-    Raises an exception if this is not the last shot or if the certificate is
+    Raises CertificateException if this is not the last shot or if the certificate is
     already expired.
     """
     hcert = data[-260][1]["v"][0]
@@ -35,13 +45,15 @@ def calc_vaccinated_till(data: Any) -> date:
 
     # Check if it is Johnson
     if hcert["sd"] == 1 and hcert["dn"] == 1:
-         raise Exception("With this certificate you are not fully immunized. (1/1)")
+        raise CertificateException(
+            "With this certificate you are not fully immunized. (1/1)"
+        )
 
     # Check if it is the last dosis (with edge-case dosis count higher than dosis total)
     elif hcert["dn"] < hcert["sd"]:
-        raise Exception("With this certificate you are not fully immunized.")
+        raise CertificateException("With this certificate you are not fully immunized.")
 
-    # First set of vaccinations is 180 valid
+    # First set of vaccinations is 180 days valid
     elif hcert["sd"] == 2:
         valid_until = vaccination_date + timedelta(days=180)
 
@@ -50,12 +62,16 @@ def calc_vaccinated_till(data: Any) -> date:
         valid_until = vaccination_date + timedelta(days=270)
 
     if valid_until < date.today():
-        raise Exception("This certificate is already expired.")
+        raise CertificateException("This certificate is already expired.")
 
     return valid_until
 
 
 def canonicalize_name(name: str) -> str:
+    """
+    Normalize the name strings from certificates and emails so that they
+    hopefully match.
+    """
     name = name.upper()
     for c in "-.,<> ":
         name = name.replace(c, "")
@@ -63,7 +79,10 @@ def canonicalize_name(name: str) -> str:
 
 
 def assert_cert_belong_to(cert_data: any, user: User):
-    """Raises an exception if the certificate doesn't belong to the user"""
+    """
+    Raises a CertificateException if the certificate doesn't belong to
+    the user.
+    """
 
     # Parse the users name form the email
     [first_name, last_name] = user.email.split("@")[0].split(".")
@@ -74,7 +93,7 @@ def assert_cert_belong_to(cert_data: any, user: User):
 
     # Using `in` because sometimes the emails don't contain the full name
     if first_name not in first_name_cert or last_name not in last_name_cert:
-        raise Exception(
+        raise CertificateException(
             "The name in the certificate "
             f" '{first_name_cert} {last_name_cert}' "
             f"does not match your name '{first_name} {last_name}'!"
@@ -82,13 +101,20 @@ def assert_cert_belong_to(cert_data: any, user: User):
 
 
 def fetch_austria_data(ressource: str):
+    """
+    Download the trustlist from the austrian national endpoint.
+    Raises CertificateException if the trustlist cannot be downloaded.
+
+    More documentation about it can be found here:
+    https://github.com/Federal-Ministry-of-Health-AT/green-pass-overview#details-on-trust-listsbusiness-rulesvalue-sets
+    """
     # Check if the cache is still hot
     cache_filename = os.path.join(app.instance_path, f"{ressource}.cache")
     try:
         with open(cache_filename, "rb") as f:
             cache_time = os.path.getmtime(f)
             if (time.time() - cache_time) / 3600 > 12:
-                raise Exception()
+                raise CertificateException()
 
             return cbor2.loads(f.read())
     except Exception:
@@ -97,7 +123,7 @@ def fetch_austria_data(ressource: str):
     # Not in cache so lets download it
     r = requests.get(f"https://dgc-trust.qr.gv.at/{ressource}")
     if r.status_code != 200:
-        raise Exception("Unable to reach austria public key gateway")
+        raise CertificateException("Unable to reach austria public key gateway")
     content = r.content
 
     # Update the cache
@@ -107,9 +133,14 @@ def fetch_austria_data(ressource: str):
     return cbor2.loads(content)
 
 
-# This code is adapted from the following repository:
-# https://github.com/lazka/pygraz-covid-cert
 def assert_cert_sign(cose_data: bytes):
+    """
+    Verify that the signature of the cose document is valid.
+    Raises CertificateException if the signature cannot be verified.
+
+    This code is heavily inspired from:
+    https://github.com/lazka/pygraz-covid-cert
+    """
     cose_msg = CoseMessage.decode(cose_data)
     required_kid = cose_msg.get_attr(cose.headers.KID)
 
@@ -120,7 +151,7 @@ def assert_cert_sign(cose_data: bytes):
         if kid == required_kid:
             break
     else:
-        raise Exception(
+        raise CertificateException(
             "Unable validate certificate signature: " f"kid '{required_kid}' not found"
         )
     found_cert = cert
@@ -128,9 +159,9 @@ def assert_cert_sign(cose_data: bytes):
     NOW = datetime.now(timezone.utc)
     cert = x509.load_der_x509_certificate(found_cert)
     if NOW < cert.not_valid_before.replace(tzinfo=timezone.utc):
-        raise Exception("cert not valid")
+        raise CertificateException("cert not valid")
     if NOW > cert.not_valid_after.replace(tzinfo=timezone.utc):
-        raise Exception("cert not valid")
+        raise CertificateException("cert not valid")
 
     # Convert the CERT to a COSE key and verify the signature
     # WARNING: we assume ES256 here but all other algorithms are allowed too
@@ -141,11 +172,18 @@ def assert_cert_sign(cose_data: bytes):
     cose_key = EC2Key(crv="P_256", x=x, y=y)
     cose_msg.key = cose_key
     if not cose_msg.verify_signature():
-        raise Exception("Unable to validate certificate signature")
+        raise CertificateException("Unable to validate certificate signature")
     print("Validated certificate :)")
 
 
 def detect_and_attach_cert(file: FileStorage, user: User) -> None:
+    """
+    Detects, decodes and verfies the certificate in the file and updates the
+    users fields vaccinated_till or tested_till.
+
+    Raises CertificateException if something goes wrong.
+    """
+
     # if the file is a pdf convert it to an image
     if file.filename.rsplit(".", 1)[1].lower() == "pdf":
         img = convert_from_bytes(file.read())[0]
@@ -155,7 +193,7 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
     # decode the qr code
     result = decode(img)
     if result == []:
-        raise Exception("No QR Code was detected in the image")
+        raise CertificateException("No QR Code was detected in the image")
 
     # decode base45
     data_zlib = base45.b45decode(result[0].data[4:])
@@ -186,11 +224,11 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
         if user.team == "racing" or user.medical_exception:
             attach_test(data, user)
         else:
-            raise Exception(
+            raise CertificateException(
                 "The certificate must be for vaccination or recovery, we don't allow tests!"
             )
     else:
-        raise Exception(
+        raise CertificateException(
             "Cannot recognize certificate type, don't know what to do here."
         )
 
@@ -198,16 +236,16 @@ def detect_and_attach_cert(file: FileStorage, user: User) -> None:
 def attach_test(data: Dict, user: User):
     # Verify the disease in the certificate
     if COVID_19_ID != data[-260][1]["t"][0]["tg"]:
-        raise Exception("The test must be for covid19")
+        raise CertificateException("The test must be for covid19")
 
     # Verify that test was negative
     if "260415000" != data[-260][1]["t"][0]["tr"]:
         id = data[-260][1]["t"][0]["tr"]
-        raise Exception(f"The test was not negative ({id})")
+        raise CertificateException(f"The test was not negative ({id})")
 
     # Verify it's a pcr test
     if "nm" not in data[-260][1]["t"][0]:
-        raise Exception("We only allow PCR tests.")
+        raise CertificateException("We only allow PCR tests.")
 
     valid_till = datetime.fromisoformat(data[-260][1]["t"][0]["sc"][:-1]) + timedelta(
         hours=48
@@ -215,11 +253,11 @@ def attach_test(data: Dict, user: User):
 
     # Verify the test is still valid
     if valid_till <= datetime.now():
-        raise Exception("This test certificate already expired!")
+        raise CertificateException("This test certificate already expired!")
 
     # Verify that the user hasn't already uploaded a newer test
     if user.tested_till and valid_till <= user.tested_till:
-        raise Exception("You already have uploaded a newer test!")
+        raise CertificateException("You already have uploaded a newer test!")
 
     # Update the user
     user.tested_till = valid_till
@@ -228,13 +266,13 @@ def attach_test(data: Dict, user: User):
 def attach_recovery(data: Dict, user: User):
     # Verify the disease in the certificate
     if COVID_19_ID != data[-260][1]["r"][0]["tg"]:
-        raise Exception("The certificate must be for covid19")
+        raise CertificateException("The certificate must be for covid19")
 
     # Recovery certificates can be issued before they are valid. Verify now that
     # the certificate is already valid.
     valid_from = date.fromisoformat(data[-260][1]["r"][0]["df"])
     if valid_from > date.today():
-        raise Exception(
+        raise CertificateException(
             f"The recovery certificate is not yet valid, come back at {valid_from}!"
         )
 
@@ -242,9 +280,9 @@ def attach_recovery(data: Dict, user: User):
     valid_till = date.fromisoformat(data[-260][1]["r"][0]["du"])
     if user.vaccinated_till is not None:
         if user.vaccinated_till > valid_till:
-            raise Exception("You already uploaded a newer certificate")
+            raise CertificateException("You already uploaded a newer certificate")
         elif user.vaccinated_till == valid_till:
-            raise Exception("You already uploaded this certificate")
+            raise CertificateException("You already uploaded this certificate")
 
     # Update the user
     # TODO: Yes we update the vaccinated field even though the user is recoverd,
@@ -257,15 +295,15 @@ def attach_recovery(data: Dict, user: User):
 def attach_vaccine(data: Dict, user: User):
     # Verify the disease in the certificate
     if COVID_19_ID != data[-260][1]["v"][0]["tg"]:
-        raise Exception("The certificate must be for covid19")
+        raise CertificateException("The certificate must be for covid19")
 
     # Verify that this vaccination is newer than the last one
     vaccinated_till = calc_vaccinated_till(data)
     if user.vaccinated_till is not None:
         if user.vaccinated_till > vaccinated_till:
-            raise Exception("You already uploaded a newer certificate")
+            raise CertificateException("You already uploaded a newer certificate")
         elif user.vaccinated_till == vaccinated_till:
-            raise Exception("You already uploaded this certificate")
+            raise CertificateException("You already uploaded this certificate")
 
     # Update the user
     user.vaccinated_till = vaccinated_till

@@ -59,9 +59,16 @@ def get_users_between(start: datetime, end: datetime):
 def users_to_csv(users: List[User]) -> str:
     si = StringIO()
     cw = csv.writer(si)
-    cw.writerow(["first name", "last name", "team"])
+    cw.writerow(["first name", "last name", "team", "email"])
 
     for user in users:
-        cw.writerow([user.first_name(), user.last_name(), user.team])
+        cw.writerow(
+            [
+                user.first_name(),
+                user.last_name(),
+                user.team,
+                user.email,
+            ]
+        )
 
     return si.getvalue()
