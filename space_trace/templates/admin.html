@@ -99,12 +99,24 @@ See which of the last 30 days where the most active
     const data = {
         labels: daily_usage["labels"],
         datasets: [{
-            label: 'Daily visits',
+            label: 'All',
             backgroundColor: '#2da44e',
             borderColor: '#2da44e',
-            cubicInterpolationMode: 'monotone',
+            cubicInterpolationMode: 'linear',
             data: daily_usage["visits"]
-        },
+        }, {
+            label: 'Space Team',
+            backgroundColor: '#8250df',
+            borderColor: '#8250df',
+            cubicInterpolationMode: 'linear',
+            data: daily_usage["visits_st"]
+        }, {
+            label: 'Racing Team',
+            backgroundColor: '#bf8700',
+            borderColor: '#bf8700',
+            cubicInterpolationMode: 'linear',
+            data: daily_usage["visits_rt"]
+        }
         ]
     };
 
@@ -112,7 +124,7 @@ See which of the last 30 days where the most active
     let startDate = new Date()
     startDate.setDate(new Date().getDate() - 31)
     const config = {
-        type: 'bar',
+        type: 'line',
         data: data,
         options: {
             scales: {

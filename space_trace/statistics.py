@@ -3,6 +3,8 @@ functions might not only be used to strictly create statistics or graphs.
 """
 
 
+from importlib.machinery import all_suffixes
+from sqlite3 import SQLITE_DROP_INDEX
 from typing import Any, Dict, List, Tuple
 from space_trace.models import User, Visit
 from space_trace import db
@@ -98,9 +100,43 @@ def daily_usage() -> Dict[str, Any]:
         .all()
     )
 
+    visits_st = (
+        db.session.query(
+            db.func.strftime("%Y-%m-%d", Visit.timestamp), db.func.count(Visit.id)
+        )
+        .filter(Visit.timestamp >= cutoff_timestamp)
+        .filter(User.id == Visit.user)
+        .filter(User.team == "space")
+        .group_by(db.func.strftime("%Y-%m-%d", Visit.timestamp))
+        .order_by(db.func.strftime("%Y-%m-%d", Visit.timestamp))
+        .all()
+    )
+
+    # TODO: I don't like this code but it is the best solution I can come up with
+    # Maybe future developers will find a better way to fill missing indexes
+    # with zeros.
+    all_index = 0
+    st_index = 0
+    st_users = []
+    while all_index < len(visits):
+        print(f"{visits_st[st_index][0]} == {visits[all_index][0]}")
+        if visits_st[st_index][0] == visits[all_index][0]:
+            st_users.append(visits_st[st_index][1])
+            st_index += 1
+        else:
+            st_users.append(0)
+
+        all_index += 1
+
+    rt_users = []
+    for i, visit in enumerate(visits):
+        rt_users.append(visit[1] - st_users[i])
+
     return {
         "labels": [v[0] for v in visits],
         "visits": [v[1] for v in visits],
+        "visits_st": st_users,
+        "visits_rt": rt_users,
     }
 
 
