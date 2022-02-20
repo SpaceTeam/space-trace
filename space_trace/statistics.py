@@ -119,7 +119,7 @@ def daily_usage() -> Dict[str, Any]:
     st_index = 0
     st_users = []
     while all_index < len(visits):
-        if len(visits_st) > 0 and visits_st[st_index][0] == visits[all_index][0]:
+        if len(visits_st) > st_index and visits_st[st_index][0] == visits[all_index][0]:
             st_users.append(visits_st[st_index][1])
             st_index += 1
         else:
