@@ -14,10 +14,8 @@ def client():
     db_fd, db_path = tempfile.mkstemp()
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
     app.config["TESTING"] = True
-    print(app.config["SQLALCHEMY_DATABASE_URI"])
 
-    db = SQLAlchemy(app)
-
+    # db = SQLAlchemy(app)
     with app.test_client() as client:
         with app.app_context():
             db.create_all()
