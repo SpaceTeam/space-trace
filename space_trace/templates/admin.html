@@ -62,7 +62,7 @@ This means they start at 00:00 and end at 23:59.
             onchange="smartChangeListener()">
             <option value="" selected>Select person</option>
             {% for user in users%}
-            <option value="{{user.id}}">{{user.full_name()}}</option>
+            <option value="{{user.id}}">{{user.team_emoji()}} {{user.full_name()}}</option>
             {% endfor %}
         </select>
     </div>
@@ -235,6 +235,7 @@ Show how often the most frequent users checked in.
         <tr>
             <th scope="col">#</th>
             <th scope="col">Name</th>
+            <th scope="col">Team</th>
             <th scope="col">Visits</th>
         </tr>
     </thead>
@@ -243,6 +244,7 @@ Show how often the most frequent users checked in.
         <tr>
             <th scope="row">{{loop.index}}</th>
             <td>{{user.full_name()}}</td>
+            <td>{{user.team_emoji()}}</td>
             <td>{{num}}</td>
         </tr>
         {% endfor %}

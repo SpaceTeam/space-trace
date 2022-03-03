@@ -49,6 +49,18 @@ class User(db.Model):
     def has_2g(self) -> bool:
         return self.is_vaccinated() or self.is_tested()
 
+    def team_short(self) -> str:
+        if self.team == "space":
+            return "st"
+        elif self.team == "racing":
+            return "rt"
+
+    def team_emoji(self) -> str:
+        if self.team == "space":
+            return "🚀"
+        elif self.team == "racing":
+            return "🏎"
+
     def __repr__(self):
         return f"<User id={self.id}, email={self.email}, team={self.team}>"
 
