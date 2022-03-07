@@ -7,7 +7,9 @@
 Hi {{user.first_name()}} 👋<br>
 To enter the HQ you need to register for contact-tracing.
 {% else %}
+<pre>
 {{joke}}
+</pre>
 {% endif %}
 <form action="{{ url_for('home') }}" method="post">
     <button type="submit" class="btn btn-primary w-100 mt-3">Enter HQ</button>

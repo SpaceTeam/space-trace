@@ -62,6 +62,8 @@ def home():
         joke = "So sorry that you cannot have another developer. "
         "Currently all of our developers are busy fixing edge-cases they "
         "forgot they put in last night at 3am."
+    elif user.email in app.config["CAKE_GIVER"]:
+        joke = "🎂 Cake pls\n- Paul & Flo"
 
     if user.is_vaccinated():
         expires_in = user.vaccinated_till - date.today()
