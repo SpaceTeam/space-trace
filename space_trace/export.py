@@ -7,7 +7,9 @@ from io import StringIO
 from typing import List
 
 from space_trace import db
+from space_trace import slack
 from space_trace.models import User, Visit
+from space_trace.slack import get_slack_handle_table
 
 
 def get_contacts_of(start: datetime, infected_id: int):
@@ -59,15 +61,23 @@ def get_users_between(start: datetime, end: datetime):
 def users_to_csv(users: List[User]) -> str:
     si = StringIO()
     cw = csv.writer(si)
-    cw.writerow(["first name", "last name", "team", "email"])
+    cw.writerow(["first name", "last name", "team", "email", "slack handle"])
+
+    slack_handle_table = get_slack_handle_table()
 
     for user in users:
+        try:
+            slack_handle = slack_handle_table[user.email]
+        except KeyError:
+            slack_handle = "@" + user.full_name()
+
         cw.writerow(
             [
                 user.first_name(),
                 user.last_name(),
                 user.team,
                 user.email,
+                slack_handle,
             ]
         )
 

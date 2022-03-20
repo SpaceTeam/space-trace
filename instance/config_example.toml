@@ -10,6 +10,9 @@ SAML_RT_PATH="instance/saml_rt"
 SQLALCHEMY_DATABASE_URI="sqlite:///../instance/trace.db"
 SQLALCHEMY_TRACK_MODIFICATIONS=false
 
+# Slack token is required so that exported users have the slack handle exported
+SLACK_USER_TOKEN="ABCDEF"
+
 # Here are the admins defined of this application. Only these users have the 
 # ability to export members in case of a corona case.
 # IMPORTANT! this also means the have access to basically all peronal data this

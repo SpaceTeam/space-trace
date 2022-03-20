@@ -45,6 +45,8 @@ pyzbar==0.1.8
 regex==2021.11.2
 requests==2.26.0
 six==1.16.0
+slack-bolt==1.13.0
+slack-sdk==3.15.2
 SQLAlchemy==1.4.26
 toml==0.10.2
 tomli==1.2.2

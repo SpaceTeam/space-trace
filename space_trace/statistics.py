@@ -3,8 +3,6 @@ functions might not only be used to strictly create statistics or graphs.
 """
 
 
-from importlib.machinery import all_suffixes
-from sqlite3 import SQLITE_DROP_INDEX
 from typing import Any, Dict, List, Tuple
 from space_trace.models import User, Visit
 from space_trace import db

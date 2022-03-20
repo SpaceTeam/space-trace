@@ -7,7 +7,11 @@
 
 <h3>Contact export</h3>
 <strong>Note:</strong> These dates are inclusive. <br>
-This means they start at 00:00 and end at 23:59.
+This means they start at 00:00 and end at 23:59. <br>
+<br>
+<strong>Note:</strong> Slack handles in exports might not be correct, as some
+are not fetched but predicted by space-trace. This mostly affects Racing Team
+users at the moment.
 <form action="{{url_for('contacts_csv')}}" method="get" class="row g-3 mt-2">
     <div class="col-md-6">
         <label for="startDate" class="form-label">Start</label>
